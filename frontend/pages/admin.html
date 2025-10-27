@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - GM Consultants</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+            <h2><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h2>
+            
+            <ul class="admin-nav">
+                <li><a href="#services" onclick="showSection('services')" class="active">
+                    <i class="fas fa-cogs"></i> Manage Services
+                </a></li>
+                <li><a href="#guidelines" onclick="showSection('guidelines')">
+                    <i class="fas fa-book"></i> Manage Guidelines
+                </a></li>
+                <li><a href="#consultations" onclick="showSection('consultations')">
+                    <i class="fas fa-comments"></i> View Consultations
+                </a></li>
+                <li><a href="#" onclick="adminLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="admin-main">
+            <!-- Services Section -->
+            <div id="services-section" class="admin-section">
+                <h3><i class="fas fa-cogs"></i> Manage Services</h3>
+                <button id="add-service-btn" class="btn">Add New Service</button>
+                
+                <div id="service-form-container" style="display: none; margin-top: 2rem;">
+                    <!-- Service form will be inserted here -->
+                </div>
+                
+                <div id="admin-services" style="margin-top: 2rem;">
+                    <!-- Services table will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Guidelines Section -->
+            <div id="guidelines-section" class="admin-section" style="display: none;">
+                <h3><i class="fas fa-book"></i> Manage Guidelines</h3>
+                <button id="add-guideline-btn" class="btn">Add New Guideline</button>
+                
+                <div id="guideline-form-container" style="display: none; margin-top: 2rem;">
+                    <!-- Guideline form will be inserted here -->
+                </div>
+                
+                <div id="admin-guidelines" style="margin-top: 2rem;">
+                    <!-- Guidelines table will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Consultations Section -->
+            <div id="consultations-section" class="admin-section" style="display: none;">
+                <h3><i class="fas fa-comments"></i> Consultation Requests</h3>
+                
+                <div id="admin-consultations" style="margin-top: 2rem;">
+                    <!-- Consultations table will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Section navigation
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('[id$="-section"]').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Remove active class from all nav links
+            document.querySelectorAll('.admin-nav a').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').style.display = 'block';
+            
+            // Add active class to clicked link
+            event.target.classList.add('active');
+            
+            // Load data for the section
+            switch(sectionName) {
+                case 'services':
+                    loadAdminServices();
+                    break;
+                case 'guidelines':
+                    loadAdminGuidelines();
+                    break;
+                case 'consultations':
+                    loadAdminConsultations();
+                    break;
+            }
+        }
+    </script>
+    
+    <script src="../js/main.js"></script>
+    <script src="../js/api.js"></script>
+</body>
+</html>

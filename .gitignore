@@ -4,6 +4,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Database files
+data/db/
+*.lock
+*.wt
+
+# Test/Debug files
+test-admin.html
+frontend/test-admin.html
+
 # Environment variables
 .env
 .env.local

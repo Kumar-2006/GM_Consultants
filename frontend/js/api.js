@@ -1,35 +1,21 @@
-// API utility functions for GM Constructions
+// API utility functions for GM Consultants
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = '/api';
 
-// Get auth token
-const getAuthToken = () => {
-  return localStorage.getItem('adminToken');
-};
-
-// Make authenticated API request
-const makeAuthenticatedRequest = async (url, options = {}) => {
-  const token = getAuthToken();
-  
-  const defaultOptions = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` })
-    }
-  };
-  
-  return fetch(url, { ...defaultOptions, ...options });
-};
+const escapeHTML = (value = '') =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 // Admin Dashboard Functions
-const initAdminDashboard = () => {
-  loadAdminServices();
-  loadAdminGuidelines();
-  loadAdminConsultations();
-  initAdminEventListeners();
-};
-
 const initAdminEventListeners = () => {
+  if (window.__gmAdminListenersAttached) {
+    return;
+  }
+
   // Service management
   const addServiceBtn = document.getElementById('add-service-btn');
   if (addServiceBtn) {
@@ -52,16 +38,29 @@ const initAdminEventListeners = () => {
       handleGuidelineSubmit(e);
     }
   });
+
+  window.__gmAdminListenersAttached = true;
 };
 
 // Service Management
 const loadAdminServices = async () => {
   const servicesContainer = document.getElementById('admin-services');
-  if (!servicesContainer) return;
+  if (!servicesContainer) {
+    console.error('admin-services container not found');
+    return;
+  }
+  
+  servicesContainer.innerHTML = '<p>Loading services...</p>';
   
   try {
-    const response = await makeAuthenticatedRequest(`${API_BASE_URL}/services`);
+    console.log('Fetching services from:', `${API_BASE_URL}/services`);
+    const response = await fetch(`${API_BASE_URL}/services`, {
+      credentials: 'include'
+    });
+    console.log('Services response status:', response.status);
+    
     const services = await response.json();
+    console.log('Services data:', services);
     
     if (services.length === 0) {
       servicesContainer.innerHTML = '<p>No services available.</p>';
@@ -80,8 +79,8 @@ const loadAdminServices = async () => {
         <tbody>
           ${services.map(service => `
             <tr>
-              <td>${service.title}</td>
-              <td>${service.description}</td>
+              <td>${escapeHTML(service.title)}</td>
+              <td>${escapeHTML(service.description)}</td>
               <td>
                 <button onclick="editService('${service._id}')" class="btn" style="padding: 0.3rem 0.8rem; margin-right: 0.5rem;">Edit</button>
                 <button onclick="deleteService('${service._id}')" class="btn" style="padding: 0.3rem 0.8rem; background-color: #dc3545;">Delete</button>
@@ -94,49 +93,59 @@ const loadAdminServices = async () => {
     
   } catch (error) {
     console.error('Error loading services:', error);
-    servicesContainer.innerHTML = '<p>Error loading services.</p>';
+    servicesContainer.innerHTML = `<p style="color: red;">Error: ${escapeHTML(error.message || 'Failed to load services.')}</p>`;
   }
 };
 
-const showAddServiceForm = () => {
+const renderServiceForm = (mode, service = {}) => {
   const formContainer = document.getElementById('service-form-container');
-  if (formContainer) {
-    formContainer.style.display = 'block';
-    formContainer.innerHTML = `
+  if (!formContainer) return;
+
+  const isEdit = mode === 'edit';
+
+  formContainer.style.display = 'block';
+  formContainer.innerHTML = `
       <div class="admin-section">
-        <h3>Add New Service</h3>
-        <form id="service-form">
+        <h3>${isEdit ? 'Edit Service' : 'Add New Service'}</h3>
+        <form id="service-form" data-mode="${mode}" ${isEdit ? `data-id="${service._id}"` : ''}>
           <div class="form-group">
             <label for="service-title">Title *</label>
-            <input type="text" id="service-title" name="title" required placeholder="Enter service title">
+            <input type="text" id="service-title" name="title" required placeholder="Enter service title" value="${escapeHTML(service.title || '')}">
           </div>
           <div class="form-group">
             <label for="service-description">Description *</label>
-            <textarea id="service-description" name="description" required placeholder="Enter service description" rows="4"></textarea>
+            <textarea id="service-description" name="description" required placeholder="Enter service description" rows="4">${escapeHTML(service.description || '')}</textarea>
           </div>
           <div class="form-group">
             <label for="service-image">Image URL (optional)</label>
-            <input type="url" id="service-image" name="imageURL" placeholder="https://example.com/image.jpg">
+            <input type="url" id="service-image" name="imageURL" placeholder="https://example.com/image.jpg" value="${escapeHTML(service.imageURL || '')}">
           </div>
           <div style="display: flex; gap: 1rem;">
-            <button type="submit" class="btn">Add Service</button>
+            <button type="submit" class="btn">${isEdit ? 'Save Changes' : 'Add Service'}</button>
             <button type="button" onclick="hideServiceForm()" class="btn btn-secondary">Cancel</button>
           </div>
         </form>
       </div>
     `;
-    
-    // Focus on first input
-    setTimeout(() => {
-      const firstInput = formContainer.querySelector('input');
-      if (firstInput) firstInput.focus();
-    }, 100);
-  }
+
+  setTimeout(() => {
+    const firstInput = formContainer.querySelector('input');
+    if (firstInput) firstInput.focus();
+  }, 100);
+};
+
+const showAddServiceForm = () => {
+  renderServiceForm('create');
+};
+
+const showEditServiceForm = (service) => {
+  renderServiceForm('edit', service);
 };
 
 const hideServiceForm = () => {
   const formContainer = document.getElementById('service-form-container');
   if (formContainer) {
+    formContainer.innerHTML = '';
     formContainer.style.display = 'none';
   }
 };
@@ -150,7 +159,9 @@ const handleServiceSubmit = async (e) => {
     description: formData.get('description').trim(),
     imageURL: formData.get('imageURL').trim()
   };
-  
+  const mode = e.target.dataset.mode || 'create';
+  const serviceId = e.target.dataset.id;
+
   // Validation
   if (!data.title || !data.description) {
     alert('Please fill in all required fields (Title and Description)');
@@ -161,25 +172,32 @@ const handleServiceSubmit = async (e) => {
   const originalText = submitBtn.textContent;
   
   try {
-    submitBtn.textContent = 'Adding...';
+    submitBtn.textContent = mode === 'edit' ? 'Saving...' : 'Adding...';
     submitBtn.disabled = true;
     
-    const response = await makeAuthenticatedRequest(`${API_BASE_URL}/services`, {
-      method: 'POST',
+    const endpoint = mode === 'edit' ? `${API_BASE_URL}/services/${serviceId}` : `${API_BASE_URL}/services`;
+    const method = mode === 'edit' ? 'PUT' : 'POST';
+
+    const response = await fetch(endpoint, {
+      method,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
       body: JSON.stringify(data)
     });
     
     if (response.ok) {
       hideServiceForm();
       loadAdminServices();
-      alert('Service added successfully!');
+      alert(mode === 'edit' ? 'Service updated successfully!' : 'Service added successfully!');
     } else {
       const error = await response.json();
-      alert('Error adding service: ' + (error.message || 'Unknown error'));
+      alert(`Error ${mode === 'edit' ? 'updating' : 'adding'} service: ` + (error.message || 'Unknown error'));
     }
   } catch (error) {
-    console.error('Error adding service:', error);
-    alert('Error adding service. Please check your connection and try again.');
+    console.error(`Error ${mode === 'edit' ? 'updating' : 'adding'} service:`, error);
+    alert(`Error ${mode === 'edit' ? 'updating' : 'adding'} service. Please check your connection and try again.`);
   } finally {
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
@@ -187,8 +205,23 @@ const handleServiceSubmit = async (e) => {
 };
 
 const editService = async (serviceId) => {
-  // Implementation for editing service
-  alert('Edit service functionality - Service ID: ' + serviceId);
+  try {
+    const response = await fetch(`${API_BASE_URL}/services/${serviceId}`, {
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      alert('Unable to load service: ' + (error.message || 'Unknown error'));
+      return;
+    }
+
+    const service = await response.json();
+    showEditServiceForm(service);
+  } catch (error) {
+    console.error('Error loading service for edit:', error);
+    alert('Error loading service details. Please try again.');
+  }
 };
 
 const deleteService = async (serviceId) => {
@@ -197,8 +230,9 @@ const deleteService = async (serviceId) => {
   }
   
   try {
-    const response = await makeAuthenticatedRequest(`${API_BASE_URL}/services/${serviceId}`, {
-      method: 'DELETE'
+    const response = await fetch(`${API_BASE_URL}/services/${serviceId}`, {
+      method: 'DELETE',
+      credentials: 'include'
     });
     
     if (response.ok) {
@@ -217,11 +251,22 @@ const deleteService = async (serviceId) => {
 // Guideline Management
 const loadAdminGuidelines = async () => {
   const guidelinesContainer = document.getElementById('admin-guidelines');
-  if (!guidelinesContainer) return;
+  if (!guidelinesContainer) {
+    console.error('admin-guidelines container not found');
+    return;
+  }
+  
+  guidelinesContainer.innerHTML = '<p>Loading guidelines...</p>';
   
   try {
-    const response = await makeAuthenticatedRequest(`${API_BASE_URL}/guidelines`);
+    console.log('Fetching guidelines from:', `${API_BASE_URL}/guidelines`);
+    const response = await fetch(`${API_BASE_URL}/guidelines`, {
+      credentials: 'include'
+    });
+    console.log('Guidelines response status:', response.status);
+    
     const guidelines = await response.json();
+    console.log('Guidelines data:', guidelines);
     
     if (guidelines.length === 0) {
       guidelinesContainer.innerHTML = '<p>No guidelines available.</p>';
@@ -238,61 +283,74 @@ const loadAdminGuidelines = async () => {
           </tr>
         </thead>
         <tbody>
-          ${guidelines.map(guideline => `
+          ${guidelines.map(guideline => {
+            const preview = guideline.content.length > 120 ? `${guideline.content.substring(0, 120)}...` : guideline.content;
+            return `
             <tr>
-              <td>${guideline.title}</td>
-              <td>${guideline.content.substring(0, 100)}...</td>
+              <td>${escapeHTML(guideline.title)}</td>
+              <td>${escapeHTML(preview)}</td>
               <td>
                 <button onclick="editGuideline('${guideline._id}')" class="btn" style="padding: 0.3rem 0.8rem; margin-right: 0.5rem;">Edit</button>
                 <button onclick="deleteGuideline('${guideline._id}')" class="btn" style="padding: 0.3rem 0.8rem; background-color: #dc3545;">Delete</button>
               </td>
             </tr>
-          `).join('')}
+          `;
+          }).join('')}
         </tbody>
       </table>
     `;
     
   } catch (error) {
     console.error('Error loading guidelines:', error);
-    guidelinesContainer.innerHTML = '<p>Error loading guidelines.</p>';
+    guidelinesContainer.innerHTML = `<p style="color: red;">Error: ${escapeHTML(error.message || 'Failed to load guidelines.')}</p>`;
   }
 };
 
-const showAddGuidelineForm = () => {
+const renderGuidelineForm = (mode, guideline = {}) => {
   const formContainer = document.getElementById('guideline-form-container');
-  if (formContainer) {
-    formContainer.style.display = 'block';
-    formContainer.innerHTML = `
+  if (!formContainer) return;
+
+  const isEdit = mode === 'edit';
+
+  formContainer.style.display = 'block';
+  formContainer.innerHTML = `
       <div class="admin-section">
-        <h3>Add New Guideline</h3>
-        <form id="guideline-form">
+        <h3>${isEdit ? 'Edit Guideline' : 'Add New Guideline'}</h3>
+        <form id="guideline-form" data-mode="${mode}" ${isEdit ? `data-id="${guideline._id}"` : ''}>
           <div class="form-group">
             <label for="guideline-title">Title *</label>
-            <input type="text" id="guideline-title" name="title" required placeholder="Enter guideline title">
+            <input type="text" id="guideline-title" name="title" required placeholder="Enter guideline title" value="${escapeHTML(guideline.title || '')}">
           </div>
           <div class="form-group">
             <label for="guideline-content">Content *</label>
-            <textarea id="guideline-content" name="content" required placeholder="Enter detailed guideline content" rows="8"></textarea>
+            <textarea id="guideline-content" name="content" required placeholder="Enter detailed guideline content" rows="8">${escapeHTML(guideline.content || '')}</textarea>
           </div>
           <div style="display: flex; gap: 1rem;">
-            <button type="submit" class="btn">Add Guideline</button>
+            <button type="submit" class="btn">${isEdit ? 'Save Changes' : 'Add Guideline'}</button>
             <button type="button" onclick="hideGuidelineForm()" class="btn btn-secondary">Cancel</button>
           </div>
         </form>
       </div>
     `;
-    
-    // Focus on first input
-    setTimeout(() => {
-      const firstInput = formContainer.querySelector('input');
-      if (firstInput) firstInput.focus();
-    }, 100);
-  }
+
+  setTimeout(() => {
+    const firstInput = formContainer.querySelector('input');
+    if (firstInput) firstInput.focus();
+  }, 100);
+};
+
+const showAddGuidelineForm = () => {
+  renderGuidelineForm('create');
+};
+
+const showEditGuidelineForm = (guideline) => {
+  renderGuidelineForm('edit', guideline);
 };
 
 const hideGuidelineForm = () => {
   const formContainer = document.getElementById('guideline-form-container');
   if (formContainer) {
+    formContainer.innerHTML = '';
     formContainer.style.display = 'none';
   }
 };
@@ -305,6 +363,8 @@ const handleGuidelineSubmit = async (e) => {
     title: formData.get('title').trim(),
     content: formData.get('content').trim()
   };
+  const mode = e.target.dataset.mode || 'create';
+  const guidelineId = e.target.dataset.id;
   
   // Validation
   if (!data.title || !data.content) {
@@ -316,25 +376,32 @@ const handleGuidelineSubmit = async (e) => {
   const originalText = submitBtn.textContent;
   
   try {
-    submitBtn.textContent = 'Adding...';
+    submitBtn.textContent = mode === 'edit' ? 'Saving...' : 'Adding...';
     submitBtn.disabled = true;
     
-    const response = await makeAuthenticatedRequest(`${API_BASE_URL}/guidelines`, {
-      method: 'POST',
+    const endpoint = mode === 'edit' ? `${API_BASE_URL}/guidelines/${guidelineId}` : `${API_BASE_URL}/guidelines`;
+    const method = mode === 'edit' ? 'PUT' : 'POST';
+
+    const response = await fetch(endpoint, {
+      method,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
       body: JSON.stringify(data)
     });
     
     if (response.ok) {
       hideGuidelineForm();
       loadAdminGuidelines();
-      alert('Guideline added successfully!');
+      alert(mode === 'edit' ? 'Guideline updated successfully!' : 'Guideline added successfully!');
     } else {
       const error = await response.json();
-      alert('Error adding guideline: ' + (error.message || 'Unknown error'));
+      alert(`Error ${mode === 'edit' ? 'updating' : 'adding'} guideline: ` + (error.message || 'Unknown error'));
     }
   } catch (error) {
-    console.error('Error adding guideline:', error);
-    alert('Error adding guideline. Please check your connection and try again.');
+    console.error(`Error ${mode === 'edit' ? 'updating' : 'adding'} guideline:`, error);
+    alert(`Error ${mode === 'edit' ? 'updating' : 'adding'} guideline. Please check your connection and try again.`);
   } finally {
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
@@ -342,8 +409,23 @@ const handleGuidelineSubmit = async (e) => {
 };
 
 const editGuideline = async (guidelineId) => {
-  // Implementation for editing guideline
-  alert('Edit guideline functionality - Guideline ID: ' + guidelineId);
+  try {
+    const response = await fetch(`${API_BASE_URL}/guidelines/${guidelineId}`, {
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      alert('Unable to load guideline: ' + (error.message || 'Unknown error'));
+      return;
+    }
+
+    const guideline = await response.json();
+    showEditGuidelineForm(guideline);
+  } catch (error) {
+    console.error('Error loading guideline for edit:', error);
+    alert('Error loading guideline details. Please try again.');
+  }
 };
 
 const deleteGuideline = async (guidelineId) => {
@@ -352,8 +434,9 @@ const deleteGuideline = async (guidelineId) => {
   }
   
   try {
-    const response = await makeAuthenticatedRequest(`${API_BASE_URL}/guidelines/${guidelineId}`, {
-      method: 'DELETE'
+    const response = await fetch(`${API_BASE_URL}/guidelines/${guidelineId}`, {
+      method: 'DELETE',
+      credentials: 'include'
     });
     
     if (response.ok) {
@@ -372,11 +455,26 @@ const deleteGuideline = async (guidelineId) => {
 // Consultation Management
 const loadAdminConsultations = async () => {
   const consultationsContainer = document.getElementById('admin-consultations');
-  if (!consultationsContainer) return;
+  if (!consultationsContainer) {
+    console.error('admin-consultations container not found');
+    return;
+  }
+  
+  consultationsContainer.innerHTML = '<p>Loading consultations...</p>';
   
   try {
-    const response = await makeAuthenticatedRequest(`${API_BASE_URL}/consultations`);
+    console.log('Fetching consultations from:', `${API_BASE_URL}/consultations`);
+    const response = await fetch(`${API_BASE_URL}/consultations`, {
+      credentials: 'include'
+    });
+    console.log('Consultations response status:', response.status);
+    
     const consultations = await response.json();
+    console.log('Consultations data:', consultations);
+
+    if (!response.ok) {
+      throw new Error(consultations.message || 'Not authenticated. Please login.');
+    }
     
     if (consultations.length === 0) {
       consultationsContainer.innerHTML = '<p>No consultation requests available.</p>';
@@ -393,17 +491,21 @@ const loadAdminConsultations = async () => {
             <th>Project Type</th>
             <th>Message</th>
             <th>Date</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           ${consultations.map(consultation => `
             <tr>
-              <td>${consultation.name}</td>
-              <td>${consultation.email}</td>
-              <td>${consultation.phone}</td>
-              <td>${consultation.projectType}</td>
-              <td>${consultation.message.substring(0, 50)}...</td>
-              <td>${new Date(consultation.createdAt).toLocaleDateString()}</td>
+              <td>${escapeHTML(consultation.name)}</td>
+              <td>${escapeHTML(consultation.email)}</td>
+              <td>${escapeHTML(consultation.phone)}</td>
+              <td>${escapeHTML(consultation.projectType)}</td>
+              <td>${escapeHTML(consultation.message)}</td>
+              <td>${escapeHTML(new Date(consultation.createdAt).toLocaleString())}</td>
+              <td>
+                <button onclick="deleteConsultation('${consultation._id}')" class="btn" style="padding: 0.3rem 0.8rem; background-color: #dc3545;">Delete</button>
+              </td>
             </tr>
           `).join('')}
         </tbody>
@@ -412,7 +514,58 @@ const loadAdminConsultations = async () => {
     
   } catch (error) {
     console.error('Error loading consultations:', error);
-    consultationsContainer.innerHTML = '<p>Error loading consultation requests.</p>';
+    consultationsContainer.innerHTML = `<p style="color: red;">Error: ${escapeHTML(error.message || 'Failed to load consultation requests.')}</p>`;
+  }
+};
+
+const deleteConsultation = async (consultationId) => {
+  if (!confirm('Delete this consultation request? This action cannot be undone.')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/consultations/${consultationId}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+
+    if (response.ok) {
+      loadAdminConsultations();
+      alert('Consultation request deleted successfully.');
+    } else {
+      const error = await response.json();
+      alert('Error deleting consultation request: ' + (error.message || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error deleting consultation:', error);
+    alert('Error deleting consultation request. Please try again.');
+  }
+};
+
+// Admin Login Function
+const adminLogin = async (username, password) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ username, password })
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok) {
+      localStorage.setItem('adminAuthenticated', 'true');
+      window.location.href = '/admin';
+    } else {
+      throw new Error(result.message || 'Login failed');
+    }
+    
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error;
   }
 };
 
@@ -447,3 +600,36 @@ const initLoginForm = () => {
     }
   });
 };
+
+// Admin Logout Function
+const adminLogout = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/logout`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.ok) {
+      window.location.href = '/login';
+    } else {
+      alert('Logout failed. Please try again.');
+    }
+  } catch (error) {
+    console.error('Logout error:', error);
+    alert('Error logging out. Please try again.');
+  }
+};
+
+// Initialize event listeners when DOM is loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initAdminEventListeners();
+    initLoginForm();
+  });
+} else {
+  initAdminEventListeners();
+  initLoginForm();
+}

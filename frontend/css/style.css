@@ -416,6 +416,13 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--white);
 }
 
+.admin-welcome {
+  padding: 0 2rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
 .admin-nav {
   list-style: none;
 }

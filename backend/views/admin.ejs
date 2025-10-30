@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - GM Consultants</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-sidebar">
+            <h2><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h2>
+            <p class="admin-welcome">Welcome, <%= adminUsername || 'Admin' %></p>
+            <ul class="admin-nav">
+                <li><a href="#services" onclick="showSection(event, 'services')" class="active">
+                    <i class="fas fa-cogs"></i> Manage Services
+                </a></li>
+                <li><a href="#guidelines" onclick="showSection(event, 'guidelines')">
+                    <i class="fas fa-book"></i> Manage Guidelines
+                </a></li>
+                <li><a href="#consultations" onclick="showSection(event, 'consultations')">
+                    <i class="fas fa-comments"></i> Consultation Requests
+                </a></li>
+                <li><a href="#" onclick="adminLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a></li>
+            </ul>
+        </div>
+
+        <div class="admin-main">
+            <div id="services-section" class="admin-section">
+                <h3><i class="fas fa-cogs"></i> Manage Services</h3>
+                <button id="add-service-btn" class="btn">Add New Service</button>
+                
+                <div id="service-form-container" style="display: none; margin-top: 2rem;"></div>
+                <div id="admin-services" style="margin-top: 2rem;"></div>
+            </div>
+
+            <div id="guidelines-section" class="admin-section" style="display: none;">
+                <h3><i class="fas fa-book"></i> Manage Guidelines</h3>
+                <button id="add-guideline-btn" class="btn">Add New Guideline</button>
+                
+                <div id="guideline-form-container" style="display: none; margin-top: 2rem;"></div>
+                <div id="admin-guidelines" style="margin-top: 2rem;"></div>
+            </div>
+
+            <div id="consultations-section" class="admin-section" style="display: none;">
+                <h3><i class="fas fa-comments"></i> Consultation Requests</h3>
+                <div id="admin-consultations" style="margin-top: 2rem;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(event, sectionName) {
+            document.querySelectorAll('[id$="-section"]').forEach(section => {
+                section.style.display = 'none';
+            });
+
+            document.querySelectorAll('.admin-nav a').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            const targetSection = document.getElementById(sectionName + '-section');
+            if (targetSection) {
+                targetSection.style.display = 'block';
+            }
+
+            if (event?.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+
+            switch(sectionName) {
+                case 'services':
+                    if (typeof loadAdminServices === 'function') {
+                        loadAdminServices();
+                    }
+                    break;
+                case 'guidelines':
+                    if (typeof loadAdminGuidelines === 'function') {
+                        loadAdminGuidelines();
+                    }
+                    break;
+                case 'consultations':
+                    if (typeof loadAdminConsultations === 'function') {
+                        loadAdminConsultations();
+                    }
+                    break;
+            }
+        }
+
+        // Load services on initial page load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('Admin dashboard loaded, initializing...');
+            
+            // Initialize event listeners for buttons
+            if (typeof initAdminEventListeners === 'function') {
+                initAdminEventListeners();
+            }
+            
+            // Load initial data
+            if (typeof loadAdminServices === 'function') {
+                console.log('Calling loadAdminServices...');
+                loadAdminServices();
+            } else {
+                console.error('loadAdminServices is not defined!');
+            }
+        });
+
+    </script>
+
+    <script src="/js/api.js"></script>
+</body>
+</html>

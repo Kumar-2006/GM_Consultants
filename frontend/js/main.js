@@ -1,7 +1,7 @@
-// Main JavaScript file for GM Constructions
+// Main JavaScript file for GM Consultants
 
 // API Base URL
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = '/api';
 
 // Utility Functions
 const showLoading = (element) => {
@@ -153,7 +153,7 @@ const initConsultationForm = () => {
       const result = await response.json();
       
       if (response.ok) {
-        showSuccess(statusDiv, 'Your consultation request has been submitted. We\'ll contact you soon.');
+        showSuccess(statusDiv, 'Your consultation request has been submitted!');
         form.reset();
       } else {
         showError(statusDiv, result.message || 'Failed to submit consultation request.');
@@ -218,13 +218,14 @@ const adminLogin = async (username, password) => {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({ username, password })
     });
     
     const result = await response.json();
     
     if (response.ok) {
-      localStorage.setItem('adminToken', result.token);
+      localStorage.setItem('adminAuthenticated', 'true');
       window.location.href = '/admin';
     } else {
       throw new Error(result.message || 'Login failed');
@@ -237,46 +238,38 @@ const adminLogin = async (username, password) => {
 };
 
 // Check admin authentication
-const checkAdminAuth = () => {
-  const token = localStorage.getItem('adminToken');
-  if (!token) {
+const checkAdminAuth = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/check`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      localStorage.removeItem('adminAuthenticated');
+      window.location.href = '/login';
+      return false;
+    }
+
+    localStorage.setItem('adminAuthenticated', 'true');
+    return true;
+  } catch (error) {
+    console.error('Auth check failed:', error);
+    localStorage.removeItem('adminAuthenticated');
     window.location.href = '/login';
     return false;
   }
-  return true;
 };
 
 // Logout admin
 const adminLogout = () => {
-  localStorage.removeItem('adminToken');
-  window.location.href = '/login';
-};
-
-// Initialize page based on current path
-const initPage = () => {
-  const currentPath = window.location.pathname;
-  
-  switch (currentPath) {
-    case '/services':
-      loadServices();
-      break;
-    case '/guidelines':
-      loadGuidelines();
-      break;
-    case '/consultation':
-      initConsultationForm();
-      break;
-    case '/admin':
-      if (checkAdminAuth()) {
-        initAdminDashboard();
-      }
-      break;
-    case '/login':
-      initLoginForm();
-      break;
-  }
-  
-  initNavigation();
+  fetch(`${API_BASE_URL}/logout`, {
+    method: 'POST',
+    credentials: 'include'
+  }).finally(() => {
+    localStorage.removeItem('adminAuthenticated');
+    window.location.href = '/login';
+  });
 };
 
 // Initialize login form
@@ -312,8 +305,7 @@ const initLoginForm = () => {
 };
 
 // Initialize admin dashboard
-const initAdminDashboard = () => {
-  // This will be handled by api.js
+const initializeAdminDashboard = () => {
   if (typeof loadAdminServices === 'function') {
     loadAdminServices();
     loadAdminGuidelines();
@@ -322,5 +314,39 @@ const initAdminDashboard = () => {
   }
 };
 
+const initPage = async () => {
+  const currentPath = window.location.pathname;
+
+  switch (currentPath) {
+    case '/services':
+      loadServices();
+      break;
+    case '/guidelines':
+      loadGuidelines();
+      break;
+    case '/consultation':
+      initConsultationForm();
+      break;
+    case '/admin': {
+      const isAuthenticated = await checkAdminAuth();
+      if (isAuthenticated) {
+        initializeAdminDashboard();
+      }
+      break;
+    }
+    case '/login':
+      initLoginForm();
+      break;
+  }
+
+  initNavigation();
+};
+
 // Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', initPage);
+document.addEventListener('DOMContentLoaded', () => {
+  initPage();
+});
+
+if (typeof window !== 'undefined') {
+  window.initAdminDashboard = initializeAdminDashboard;
+}

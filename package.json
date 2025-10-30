@@ -19,7 +19,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express-session": "^1.17.3",
-    "body-parser": "^1.20.2"
+    "body-parser": "^1.20.2",
+    "ejs": "^3.1.10"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

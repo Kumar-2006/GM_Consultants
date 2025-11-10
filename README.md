@@ -74,6 +74,7 @@ gm-consultants/
 ### Prerequisites
 - Node.js (v14 or higher)
 - MongoDB (local or MongoDB Atlas)
+- MongoDB Database Tools (`mongodump`, `mongorestore`)
 - npm or yarn
 
 ### Installation Steps
@@ -89,15 +90,20 @@ gm-consultants/
    ```
 
 3. **Set up environment variables**
-   Create a `.env` file in the root directory:
+   Copy the sample file and update the values:
+   ```powershell
+   Copy-Item .env.example .env
+   ```
+   Then edit `.env` and provide your secrets and Atlas URI (or keep the local URI for development):
    ```env
-   MONGODB_URI=mongodb://localhost:27017/gm-consultants
+   MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-host>/gm-consultants?retryWrites=true&w=majority
    JWT_SECRET=your-secret-key-here
+   SESSION_SECRET=your-session-secret-here
    PORT=3000
    ```
 
-4. **Start MongoDB**
-   Make sure MongoDB is running on your system.
+4. **Start MongoDB (local only)**
+   Start the MongoDB server if you are developing against the local instance. Skip this when using MongoDB Atlas.
 
 5. **Initialize the database**
    ```bash
@@ -112,6 +118,15 @@ gm-consultants/
 7. **Access the application**
    - Website: http://localhost:3000
    - Admin Login: http://localhost:3000/login
+
+   ## ☁️ Move Local Data to MongoDB Atlas
+
+   - **Install MongoDB Database Tools**: Open an elevated PowerShell window and run `choco install mongodb-database-tools`. If you do not use Chocolatey, download the Windows installer from the official MongoDB Database Tools page and add the installation folder to your `PATH`.
+   - **Export the local database**: Ensure your local MongoDB server is running (for example, via `mongod.bat`), then run `mongodump --uri "mongodb://localhost:27017/gm-consultants" --out "./backups/gm-consultants-export"`.
+   - **Prepare your Atlas cluster**: Create a free or paid cluster in MongoDB Atlas, create a database user with username/password authentication, and whitelist your current IP address.
+   - **Restore into Atlas**: Run `mongorestore --nsInclude "gm-consultants.*" --uri "mongodb+srv://<username>:<password>@<cluster-host>/gm-consultants" "./backups/gm-consultants-export/gm-consultants"` to upload the dump.
+   - **Update environment variables**: Set the Atlas connection string in `.env` so the application points to the cloud database. Restart the server to pick up the new configuration.
+   - **Verify the migration**: Execute `node check-data.js` to confirm collections, and smoke-test key application flows (login, service list, consultation submission).
 
 ## 🔐 Default Admin Credentials
 

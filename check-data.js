@@ -1,7 +1,12 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 
-// Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/gm-consultants', {
+const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/gm-consultants';
+const redactedUri = mongoUri.replace(/\/\/([^@]*@)/, '//***@');
+
+console.log(`Connecting to MongoDB: ${redactedUri}`);
+
+mongoose.connect(mongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });

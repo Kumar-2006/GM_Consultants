@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 require('dotenv').config();
 
 const connectDB = require('./config/db');
@@ -26,7 +27,8 @@ app.use(cors({
 }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(session({
+
+const sessionOptions = {
   secret: process.env.SESSION_SECRET || 'gm-consultants-session-secret',
   resave: false,
   saveUninitialized: false,
@@ -36,7 +38,18 @@ app.use(session({
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 24 * 60 * 60 * 1000
   }
-}));
+};
+
+if (process.env.MONGODB_URI) {
+  sessionOptions.store = MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI,
+    collectionName: 'sessions',
+    ttl: 24 * 60 * 60,
+    autoRemove: 'native'
+  });
+}
+
+app.use(session(sessionOptions));
 
 // View engine setup
 app.set('view engine', 'ejs');

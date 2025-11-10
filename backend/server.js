@@ -20,6 +20,11 @@ const PORT = process.env.PORT || 3000;
 // Connect to MongoDB on module load so runtime environments (Vercel) get a connection
 connectDB();
 
+// Ensure secure cookies work properly behind reverse proxies (e.g., Vercel)
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 // Middleware
 app.use(cors({
   origin: true,

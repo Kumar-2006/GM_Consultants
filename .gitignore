@@ -10,10 +10,6 @@ data/db/
 *.lock
 *.wt
 
-# Test/Debug files
-test-admin.html
-frontend/test-admin.html
-
 # Environment variables
 .env
 .env.local

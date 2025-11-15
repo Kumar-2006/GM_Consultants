@@ -62,15 +62,14 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 const reactBuildPath = path.join(__dirname, '../frontend-react/build');
-const legacyStaticPath = path.join(__dirname, '../frontend');
+const adminAssetsPath = path.join(__dirname, 'public');
 
 if (fs.existsSync(reactBuildPath)) {
   app.use(express.static(reactBuildPath));
 }
 
-// Admin views still rely on legacy CSS/JS assets; expose them even when the React build exists.
-if (fs.existsSync(legacyStaticPath)) {
-  app.use(express.static(legacyStaticPath));
+if (fs.existsSync(adminAssetsPath)) {
+  app.use(express.static(adminAssetsPath));
 }
 
 // Suppress favicon 404 error
@@ -94,25 +93,22 @@ app.use('/api', authRoutes);
 if (fs.existsSync(reactBuildPath)) {
   const reactIndexFile = path.join(reactBuildPath, 'index.html');
 
-  app.get(['/', '/services', '/guidelines', '/consultation'], (req, res) => {
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/admin') || req.path.startsWith('/login')) {
+      return next();
+    }
+
+    if (req.method !== 'GET') {
+      return next();
+    }
+
     res.sendFile(reactIndexFile);
   });
 } else {
-  // Fallback to EJS pages if React build not available
-  app.get('/', (req, res) => {
-    res.render('index');
-  });
-
-  app.get('/services', (req, res) => {
-    res.render('services');
-  });
-
-  app.get('/guidelines', (req, res) => {
-    res.render('guidelines');
-  });
-
-  app.get('/consultation', (req, res) => {
-    res.render('consultation');
+  app.get('/', (_req, res) => {
+    res.status(200).json({
+      message: 'React build not found. Run "npm start" inside frontend-react during development or build the frontend for production.'
+    });
   });
 }
 

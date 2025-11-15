@@ -15,19 +15,13 @@ The database HAS data (verified):
 ### 2. Debug Tools Added
 
 #### A. Enhanced Logging
-Added console.log statements to track API calls in `frontend/js/api.js`:
+Added console.log statements to track API calls in `backend/public/js/api.js`:
 - Shows which endpoints are being called
 - Displays response status codes
 - Logs actual data received
 
-#### B. Debug Page
-Created `frontend/test-admin.html` - Open this in browser to:
-- Test authentication status
-- Test each API endpoint individually
-- Try logging in
-- See detailed error messages
-
-**To use**: Navigate to `http://localhost:3000/test-admin.html`
+#### B. Browser DevTools
+Use the network tab in your browser DevTools to inspect `/api/*` requests while working in `/admin` or `/login`.
 
 ## Common Issues & Solutions
 
@@ -67,19 +61,13 @@ Created `frontend/test-admin.html` - Open this in browser to:
    npm start
    ```
 
-3. **Open Debug Page**:
-   - Go to: http://localhost:3000/test-admin.html
-   - Click "Check Authentication"
-   - If not logged in, use the Login Test section
-   - Then test each API endpoint
-
-4. **Check Browser Console**:
+3. **Check Browser Console**:
    - Open DevTools (F12)
    - Go to Console tab
    - Look for log messages starting with "Fetching..."
    - Check for any red error messages
 
-5. **Try Admin Dashboard**:
+4. **Try Admin Dashboard**:
    - Go to: http://localhost:3000/admin
    - Open Console (F12)
    - Watch for log messages
@@ -109,7 +97,6 @@ Consultations data: [{name: "Ram", ...}, ...]
 - [ ] Server is running (`npm start`)
 - [ ] Logged in as admin at `/login`
 - [ ] Browser console shows no errors
-- [ ] Can see data at `/test-admin.html`
 - [ ] Session cookies are enabled in browser
 
 ## If Still Not Working

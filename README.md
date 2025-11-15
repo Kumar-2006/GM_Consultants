@@ -6,20 +6,16 @@ A comprehensive full-stack web application for GM Consultants (Green Minds Consu
 
 ```
 gm-consultants/
-├── frontend-react/             # New React.js responsive frontend
+├── frontend-react/             # React SPA for public-facing experience
 │   ├── public/
 │   └── src/
 │       ├── api/                # API helpers for REST endpoints
 │       ├── components/         # Reusable UI building blocks
 │       ├── pages/              # Routed page screens (Home, Services, etc.)
 │       └── App.js              # Router + layout
-├── frontend/                   # Legacy static implementation (kept for reference)
-│   ├── pages/
-│   ├── css/
-│   ├── js/
-│   └── assets/
 ├── backend/
 │   ├── server.js               # Main server file
+│   ├── public/                 # Static CSS/JS used by legacy admin views
 │   ├── routes/
 │   │   ├── serviceRoutes.js    # Service API routes
 │   │   ├── guidelineRoutes.js  # Guideline API routes
@@ -113,7 +109,7 @@ gm-consultants/
    npm start
    ```
 
-   7. **Start the React development server (optional)**
+      7. **Start the React development server**
        ```bash
        cd frontend-react
        npm start
@@ -194,7 +190,8 @@ npm run dev
 ```
 
 ### Project Structure Notes
-- Frontend files are served statically from the `frontend` directory
+- The Express server serves the production React build from `frontend-react/build`
+- Admin login/dashboard still use lightweight EJS templates with assets in `backend/public`
 - API routes are prefixed with `/api`
 - Admin routes are protected with JWT middleware
 - All forms include client-side validation

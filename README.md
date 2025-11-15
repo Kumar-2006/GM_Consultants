@@ -6,20 +6,18 @@ A comprehensive full-stack web application for GM Consultants (Green Minds Consu
 
 ```
 gm-consultants/
-├── frontend/
+├── frontend-react/             # New React.js responsive frontend
+│   ├── public/
+│   └── src/
+│       ├── api/                # API helpers for REST endpoints
+│       ├── components/         # Reusable UI building blocks
+│       ├── pages/              # Routed page screens (Home, Services, etc.)
+│       └── App.js              # Router + layout
+├── frontend/                   # Legacy static implementation (kept for reference)
 │   ├── pages/
-│   │   ├── index.html          # Home page
-│   │   ├── services.html        # Services page
-│   │   ├── guidelines.html      # Guidelines page
-│   │   ├── consultation.html    # Consultation form
-│   │   ├── admin.html          # Admin dashboard
-│   │   └── login.html          # Admin login
 │   ├── css/
-│   │   └── style.css           # Main stylesheet
 │   ├── js/
-│   │   ├── main.js             # Main JavaScript
-│   │   └── api.js              # API utilities
-│   └── assets/                 # Images and icons
+│   └── assets/
 ├── backend/
 │   ├── server.js               # Main server file
 │   ├── routes/
@@ -62,7 +60,7 @@ gm-consultants/
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
+- **Frontend**: React.js (SPA), HTML5, CSS3, JavaScript (ES6+)
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB with Mongoose ODM
 - **Authentication**: JWT (JSON Web Tokens)
@@ -114,6 +112,13 @@ gm-consultants/
    ```bash
    npm start
    ```
+
+   7. **Start the React development server (optional)**
+       ```bash
+       cd frontend-react
+       npm start
+       ```
+       The React dev server proxies API calls to `http://localhost:3000` (configured via `proxy` in `frontend-react/package.json`).
 
 7. **Access the application**
    - Website: http://localhost:3000
@@ -255,6 +260,7 @@ NODE_ENV=production
 - Use environment variables for sensitive data
 - Implement rate limiting
 - Add input sanitization
+- Build the React frontend (`cd frontend-react && npm run build`) and ensure `backend/server.js` serves the generated assets
 - Set up monitoring and logging
 
 ## 📞 Support

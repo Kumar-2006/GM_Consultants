@@ -1,0 +1,11 @@
+.error-state {
+  padding: 1.5rem;
+  border-radius: 1rem;
+  background: rgba(220, 53, 69, 0.1);
+  color: #8f1f2f;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  text-align: center;
+}

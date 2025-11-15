@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
+const fs = require('fs');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 require('dotenv').config();
@@ -60,8 +61,17 @@ app.use(session(sessionOptions));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Serve static files from frontend
-app.use(express.static(path.join(__dirname, '../frontend')));
+const reactBuildPath = path.join(__dirname, '../frontend-react/build');
+const legacyStaticPath = path.join(__dirname, '../frontend');
+
+if (fs.existsSync(reactBuildPath)) {
+  app.use(express.static(reactBuildPath));
+}
+
+// Admin views still rely on legacy CSS/JS assets; expose them even when the React build exists.
+if (fs.existsSync(legacyStaticPath)) {
+  app.use(express.static(legacyStaticPath));
+}
 
 // Suppress favicon 404 error
 app.get('/favicon.ico', (req, res) => res.status(204).end());
@@ -80,22 +90,31 @@ app.use('/api/guidelines', guidelineRoutes);
 app.use('/api/consultations', consultationRoutes);
 app.use('/api', authRoutes);
 
-// Serve frontend pages
-app.get('/', (req, res) => {
-  res.render('index');
-});
+// Serve React frontend when build exists
+if (fs.existsSync(reactBuildPath)) {
+  const reactIndexFile = path.join(reactBuildPath, 'index.html');
 
-app.get('/services', (req, res) => {
-  res.render('services');
-});
+  app.get(['/', '/services', '/guidelines', '/consultation'], (req, res) => {
+    res.sendFile(reactIndexFile);
+  });
+} else {
+  // Fallback to EJS pages if React build not available
+  app.get('/', (req, res) => {
+    res.render('index');
+  });
 
-app.get('/guidelines', (req, res) => {
-  res.render('guidelines');
-});
+  app.get('/services', (req, res) => {
+    res.render('services');
+  });
 
-app.get('/consultation', (req, res) => {
-  res.render('consultation');
-});
+  app.get('/guidelines', (req, res) => {
+    res.render('guidelines');
+  });
+
+  app.get('/consultation', (req, res) => {
+    res.render('consultation');
+  });
+}
 
 app.get('/admin', ensureAuthenticated, (req, res) => {
   res.render('admin', { adminUsername: req.session.username });

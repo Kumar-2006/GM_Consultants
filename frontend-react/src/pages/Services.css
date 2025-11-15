@@ -1,0 +1,24 @@
+.services-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.services-header {
+  background: #ffffff;
+  padding: 2.5rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 16px 24px rgba(22, 36, 71, 0.08);
+}
+
+.services-header h1 {
+  font-size: clamp(2rem, 4vw, 2.5rem);
+  color: #1f2d4d;
+  margin-bottom: 1rem;
+}
+
+.services-header p {
+  color: #495571;
+  line-height: 1.7;
+  max-width: 720px;
+}

@@ -87,13 +87,9 @@ gm-consultants/
    ```powershell
    Copy-Item .env.example .env
    ```
-   Then edit `.env` and provide your secrets and Atlas URI (local MongoDB instances are no longer supported). The shared Atlas connection string for this project is:
-   ```
-   mongodb+srv://kumarchandramohan2006_db_user:XSshhopkWttHHGt4@gm-consultants.kxhuzwu.mongodb.net/gm-consultants?retryWrites=true&w=majority&appName=GM-Consultants
-   ```
-   Use it directly in your `.env` alongside the secrets:
+   Then edit `.env` and provide **your own** Atlas connection string and secrets (local MongoDB instances are no longer supported). Example:
    ```env
-   MONGODB_URI=mongodb+srv://kumarchandramohan2006_db_user:XSshhopkWttHHGt4@gm-consultants.kxhuzwu.mongodb.net/gm-consultants?retryWrites=true&w=majority&appName=GM-Consultants
+   MONGO_URI=your-mongodb-atlas-connection-string
    JWT_SECRET=your-secret-key-here
    SESSION_SECRET=your-session-secret-here
    PORT=3000
@@ -245,8 +241,9 @@ npm run dev
 
 ### Environment Variables for Production
 ```env
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/gm-constructions
+MONGO_URI=your-mongodb-atlas-connection-string
 JWT_SECRET=your-production-secret-key
+SESSION_SECRET=your-production-session-secret
 PORT=3000
 NODE_ENV=production
 ```

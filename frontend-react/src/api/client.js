@@ -1,10 +1,28 @@
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "/api";
+const rawBaseUrl =
+  process.env.REACT_APP_API_URL ||
+  process.env.REACT_APP_API_BASE_URL ||
+  "/api";
+
+const apiBaseUrl = rawBaseUrl.endsWith("/")
+  ? rawBaseUrl.slice(0, -1)
+  : rawBaseUrl;
 
 const buildUrl = (path) => {
   if (path.startsWith("http")) {
     return path;
   }
-  return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+
+  const normalisedPath = path.startsWith("/") ? path : `/${path}`;
+
+  if (!apiBaseUrl) {
+    return normalisedPath;
+  }
+
+  if (/^https?:\/\//i.test(apiBaseUrl)) {
+    return `${apiBaseUrl}${normalisedPath}`;
+  }
+
+  return `${apiBaseUrl}${normalisedPath}`;
 };
 
 export const apiRequest = async (path, options = {}) => {

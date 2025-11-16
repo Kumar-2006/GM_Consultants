@@ -1,5 +1,4 @@
 const express = require("express");
-const router = express.Router();
 const auth = require("../middleware/auth");
 const {
   getGuidelines,
@@ -9,13 +8,18 @@ const {
   deleteGuideline,
 } = require("../controllers/guidelineController");
 
-// Public routes
-router.get("/", getGuidelines);
+const publicRouter = express.Router();
+publicRouter.get("/", getGuidelines);
 
-// Admin routes
-router.get("/:id", auth, getGuidelineById);
-router.post("/", auth, createGuideline);
-router.put("/:id", auth, updateGuideline);
-router.delete("/:id", auth, deleteGuideline);
+const adminRouter = express.Router();
+adminRouter.use(auth);
+adminRouter.get("/", getGuidelines);
+adminRouter.get("/:id", getGuidelineById);
+adminRouter.post("/", createGuideline);
+adminRouter.put("/:id", updateGuideline);
+adminRouter.delete("/:id", deleteGuideline);
 
-module.exports = router;
+module.exports = {
+  publicRouter,
+  adminRouter,
+};

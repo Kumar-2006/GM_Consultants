@@ -1,5 +1,4 @@
 const express = require("express");
-const router = express.Router();
 const auth = require("../middleware/auth");
 const {
   getServices,
@@ -9,13 +8,18 @@ const {
   deleteService,
 } = require("../controllers/serviceController");
 
-// Public routes
-router.get("/", getServices);
+const publicRouter = express.Router();
+publicRouter.get("/", getServices);
 
-// Admin routes
-router.get("/:id", auth, getServiceById);
-router.post("/", auth, createService);
-router.put("/:id", auth, updateService);
-router.delete("/:id", auth, deleteService);
+const adminRouter = express.Router();
+adminRouter.use(auth);
+adminRouter.get("/", getServices);
+adminRouter.get("/:id", getServiceById);
+adminRouter.post("/", createService);
+adminRouter.put("/:id", updateService);
+adminRouter.delete("/:id", deleteService);
 
-module.exports = router;
+module.exports = {
+  publicRouter,
+  adminRouter,
+};

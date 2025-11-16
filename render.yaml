@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: gm-consultants-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node backend/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: MONGO_URI
+        value: REPLACE_WITH_MONGO_URI

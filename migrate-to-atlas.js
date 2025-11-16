@@ -6,7 +6,12 @@ const Guideline = require('./backend/models/Guideline');
 const Consultation = require('./backend/models/Consultation');
 const AdminUser = require('./backend/models/AdminUser');
 
-const localUri = process.env.LOCAL_MONGODB_URI || 'mongodb://localhost:27017/gm-consultants';
+const localUri = process.env.LOCAL_MONGODB_URI;
+
+if (!localUri) {
+  console.error('LOCAL_MONGODB_URI must be set to run the migration script.');
+  process.exit(1);
+}
 const atlasUri = process.env.MONGODB_URI;
 
 const redactUri = (uri = '') => uri.replace(/:\/\/([^@]*@)/, '://***@');

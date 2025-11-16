@@ -1,5 +1,20 @@
 const AdminUser = require("../models/AdminUser");
 
+const buildCookieOptions = () => {
+  const options = {
+    path: "/",
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: process.env.NODE_ENV === "production",
+  };
+
+  if (process.env.COOKIE_DOMAIN) {
+    options.domain = process.env.COOKIE_DOMAIN;
+  }
+
+  return options;
+};
+
 // Handle admin login
 const login = async (req, res, next) => {
   try {
@@ -59,7 +74,7 @@ const logout = (req, res, next) => {
         return next(err);
       }
 
-      res.clearCookie("connect.sid");
+      res.clearCookie("connect.sid", buildCookieOptions());
       return res.status(200).json({ message: "Logged out" });
     });
   } catch (error) {
@@ -70,6 +85,12 @@ const logout = (req, res, next) => {
 // Register admin (initial setup)
 const register = async (req, res, next) => {
   try {
+    if (process.env.ALLOW_ADMIN_REGISTRATION !== "true") {
+      return res
+        .status(403)
+        .json({ message: "Admin registration is disabled." });
+    }
+
     const { username, password } = req.body;
 
     if (!username || !password) {

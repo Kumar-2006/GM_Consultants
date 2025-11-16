@@ -1,6 +1,6 @@
 // Admin utilities for GM Consultants dashboard
 
-const API_BASE_URL = "/api";
+const API_BASE_URL = "/admin";
 
 const escapeHTML = (value = "") =>
   value
@@ -486,7 +486,7 @@ const adminLogout = async () => {
       headers: { "Content-Type": "application/json" },
     });
 
-    window.location.href = "/login";
+    window.location.href = "/admin/login";
   } catch (error) {
     alert(error.message);
   }

@@ -7,135 +7,130 @@ const MongoStore = require("connect-mongo");
 require("dotenv").config();
 
 const connectDB = require("./config/db");
-
-// Import routes
-const serviceRoutes = require("./routes/serviceRoutes");
-const guidelineRoutes = require("./routes/guidelineRoutes");
-const consultationRoutes = require("./routes/consultationRoutes");
-const authRoutes = require("./routes/authRoutes");
+const {
+  publicRouter: servicePublicRoutes,
+  adminRouter: serviceAdminRoutes,
+} = require("./routes/serviceRoutes");
+const {
+  publicRouter: guidelinePublicRoutes,
+  adminRouter: guidelineAdminRoutes,
+} = require("./routes/guidelineRoutes");
+const {
+  publicRouter: consultationPublicRoutes,
+  adminRouter: consultationAdminRoutes,
+} = require("./routes/consultationRoutes");
+const adminAuthRoutes = require("./routes/authRoutes");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 5000;
+const isProduction = process.env.NODE_ENV === "production";
 
-// Connect to MongoDB on module load so runtime environments (Vercel) get a connection
-connectDB();
+connectDB().catch((error) => {
+  console.error("Failed to connect to MongoDB:", error.message);
+});
 
-// Ensure secure cookies work properly behind reverse proxies (e.g., Vercel)
-if (process.env.NODE_ENV === "production") {
-  app.set("trust proxy", 1);
-}
+app.set("trust proxy", 1);
 
-// Middleware
 app.use(
   cors({
     origin: true,
     credentials: true,
   }),
 );
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const sessionOptions = {
-  secret: process.env.SESSION_SECRET || "gm-consultants-session-secret",
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: 24 * 60 * 60 * 1000,
-  },
-};
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      sameSite: "none",
+      secure: true,
+    },
+  }),
+);
 
-if (process.env.MONGODB_URI) {
-  sessionOptions.store = MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI,
-    collectionName: "sessions",
-    ttl: 24 * 60 * 60,
-    autoRemove: "native",
-  });
-}
-
-app.use(session(sessionOptions));
-
-// View engine setup
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-const publicReactPath = path.join(__dirname, "public/app");
-const fallbackReactPath = path.join(__dirname, "../frontend-react/build");
-const reactBuildPath = fs.existsSync(publicReactPath)
-  ? publicReactPath
-  : fallbackReactPath;
 const adminAssetsPath = path.join(__dirname, "public");
-
-if (fs.existsSync(reactBuildPath)) {
-  app.use(express.static(reactBuildPath));
-}
-
 if (fs.existsSync(adminAssetsPath)) {
   app.use(express.static(adminAssetsPath));
 }
 
-// Suppress favicon 404 error
 app.get("/favicon.ico", (req, res) => res.status(204).end());
 
-// Protect admin view route
-const ensureAuthenticated = (req, res, next) => {
+const requireAdminSession = (req, res, next) => {
   if (req.session?.adminId) {
     return next();
   }
-  return res.redirect("/login");
+
+  if (req.accepts("html")) {
+    return res.redirect("/admin/login");
+  }
+
+  return res.status(401).json({ message: "Not authenticated" });
 };
 
-// API Routes
-app.use("/api/services", serviceRoutes);
-app.use("/api/guidelines", guidelineRoutes);
-app.use("/api/consultations", consultationRoutes);
-app.use("/api", authRoutes);
+// Public API routes
+app.use("/api/services", servicePublicRoutes);
+app.use("/api/guidelines", guidelinePublicRoutes);
+app.use("/api/consultations", consultationPublicRoutes);
 
-// Serve React frontend when build exists
-if (fs.existsSync(reactBuildPath)) {
-  const reactIndexFile = path.join(reactBuildPath, "index.html");
+// Admin API routes
+app.use("/admin/services", serviceAdminRoutes);
+app.use("/admin/guidelines", guidelineAdminRoutes);
+app.use("/admin/consultations", consultationAdminRoutes);
+app.use("/admin", adminAuthRoutes);
 
-  app.get("*", (req, res, next) => {
-    if (
-      req.path.startsWith("/api") ||
-      req.path.startsWith("/admin") ||
-      req.path.startsWith("/login")
-    ) {
-      return next();
-    }
+// Admin views
+app.get("/admin/login", (req, res) => {
+  if (req.session?.adminId) {
+    return res.redirect("/admin");
+  }
 
+  return res.render("login");
+});
+
+app.get("/login", (_req, res) => res.redirect("/admin/login"));
+
+app.get("/admin", requireAdminSession, (req, res) => {
+  res.render("admin", { adminUsername: req.session.username || "Admin" });
+});
+
+// React SPA (served only in production)
+const reactBuildPath = path.join(__dirname, "public/app");
+const reactIndexFile = path.join(reactBuildPath, "index.html");
+const serveSpa = isProduction && fs.existsSync(reactIndexFile);
+
+if (serveSpa) {
+  app.use(express.static(reactBuildPath));
+
+  const sendReactApp = (req, res) => res.sendFile(reactIndexFile);
+
+  app.get(["/", "/services", "/guidelines", "/consultation"], sendReactApp);
+  app.get(/^\/(?!api|admin\b)/, (req, res, next) => {
     if (req.method !== "GET") {
       return next();
     }
 
-    res.sendFile(reactIndexFile);
+    return sendReactApp(req, res);
   });
 } else {
   app.get("/", (_req, res) => {
     res.status(200).json({
       message:
-        'React build not found. Run "npm start" inside frontend-react during development or build the frontend for production.',
+        "SPA build not found. Run the React dev server from frontend-react during development.",
     });
   });
 }
 
-app.get("/admin", ensureAuthenticated, (req, res) => {
-  res.render("admin", { adminUsername: req.session.username });
-});
-
-app.get("/login", (req, res) => {
-  if (req.session?.adminId) {
-    return res.redirect("/admin");
-  }
-  res.render("login");
-});
-
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error(err.stack || err.message || err);
   const status = err.status || 500;
   res.status(status).json({
     message: err.message || "Something went wrong!",

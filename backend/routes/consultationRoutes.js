@@ -1,5 +1,4 @@
 const express = require("express");
-const router = express.Router();
 const auth = require("../middleware/auth");
 const {
   getConsultations,
@@ -7,8 +6,15 @@ const {
   deleteConsultation,
 } = require("../controllers/consultationController");
 
-router.get("/", auth, getConsultations);
-router.post("/", createConsultation);
-router.delete("/:id", auth, deleteConsultation);
+const publicRouter = express.Router();
+publicRouter.post("/", createConsultation);
 
-module.exports = router;
+const adminRouter = express.Router();
+adminRouter.use(auth);
+adminRouter.get("/", getConsultations);
+adminRouter.delete("/:id", deleteConsultation);
+
+module.exports = {
+  publicRouter,
+  adminRouter,
+};

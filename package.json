@@ -4,7 +4,7 @@
   "description": "Full-stack web application for GM Consultants architectural consultancy firm",
   "main": "backend/server.js",
   "scripts": {
-    "start": "node backend/server.js",
+    "start": "node server.js",
     "dev": "nodemon backend/server.js",
     "build": "npm run build:client && npm run sync-frontend",
     "build:client": "npm run build --prefix frontend-react",

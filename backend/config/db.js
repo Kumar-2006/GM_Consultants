@@ -1,29 +1,31 @@
 const mongoose = require("mongoose");
 
+let cachedConnection = null;
+
 const connectDB = async () => {
+  if (cachedConnection && mongoose.connection.readyState >= 1) {
+    return cachedConnection;
+  }
+
+  const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+
+  if (!mongoUri) {
+    throw new Error(
+      "MONGO_URI is not defined. Provide the Atlas connection string in your environment.",
+    );
+  }
+
   try {
-    if (mongoose.connection.readyState >= 1) {
-      return mongoose.connection;
-    }
-
-    const mongoUri = process.env.MONGODB_URI;
-
-    if (!mongoUri) {
-      throw new Error(
-        "MONGODB_URI is not defined. Set the Atlas connection string in your environment.",
-      );
-    }
-
     const conn = await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 10000,
     });
 
+    cachedConnection = conn;
     const { host, name } = conn.connection;
-    console.log(`MongoDB Connected: ${host}/${name}`);
+    console.log(`MongoDB connected: ${host}/${name}`);
     return conn;
   } catch (error) {
-    console.error("Database connection error:", error);
+    console.error("Database connection error:", error.message);
     throw error;
   }
 };

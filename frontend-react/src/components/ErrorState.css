@@ -9,3 +9,15 @@
   align-items: center;
   text-align: center;
 }
+
+.error-state__title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.error-state__message {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}

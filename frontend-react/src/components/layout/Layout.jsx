@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
-import Header from './Header';
-import Footer from './Footer';
-import NotificationShroud from './NotificationShroud';
-import '../../App.css';
+import { useMemo } from "react";
+import Header from "./Header";
+import Footer from "./Footer";
+import NotificationShroud from "./NotificationShroud";
+import "../../App.css";
 
 const Layout = ({ children }) => {
   const year = useMemo(() => new Date().getFullYear(), []);

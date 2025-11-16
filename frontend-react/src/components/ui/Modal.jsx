@@ -1,9 +1,9 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import { FiX } from 'react-icons/fi';
+import { AnimatePresence, motion } from "framer-motion";
+import { FiX } from "react-icons/fi";
 
 const overlayVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1 }
+  visible: { opacity: 1 },
 };
 
 const contentVariants = {
@@ -12,9 +12,9 @@ const contentVariants = {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { type: 'spring', stiffness: 280, damping: 24 }
+    transition: { type: "spring", stiffness: 280, damping: 24 },
   },
-  exit: { opacity: 0, y: -20, scale: 0.96 }
+  exit: { opacity: 0, y: -20, scale: 0.96 },
 };
 
 const Modal = ({ open, onClose, title, children }) => (
@@ -31,7 +31,12 @@ const Modal = ({ open, onClose, title, children }) => (
         <motion.div className="modal__content" variants={contentVariants}>
           <header className="modal__header">
             <h3>{title}</h3>
-            <button type="button" onClick={onClose} aria-label="Close" className="modal__close">
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="modal__close"
+            >
               <FiX size={22} />
             </button>
           </header>

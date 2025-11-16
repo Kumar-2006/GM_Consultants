@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 const useApiData = (fetcher, options = {}) => {
   const { immediate = true, params = [] } = options;

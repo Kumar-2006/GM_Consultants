@@ -1,27 +1,32 @@
-import { motion } from 'framer-motion';
-import { FiLinkedin, FiMail, FiPhone } from 'react-icons/fi';
-import '../../styles/global.css';
+import { motion } from "framer-motion";
+import { FiLinkedin, FiMail, FiPhone } from "react-icons/fi";
+import "../../styles/global.css";
 
 const footerLinks = [
   {
-    label: 'Services',
+    label: "Services",
     items: [
-      'Building Plan Approval',
-      'Layout Planning & Compliance',
-      'Statutory Documentation',
-      'Regulatory Advisory'
-    ]
+      "Building Plan Approval",
+      "Layout Planning & Compliance",
+      "Statutory Documentation",
+      "Regulatory Advisory",
+    ],
   },
   {
-    label: 'Resources',
-    items: ['Guideline Library', 'Knowledge Hub', 'Case Studies', 'Compliance Checklist']
-  }
+    label: "Resources",
+    items: [
+      "Guideline Library",
+      "Knowledge Hub",
+      "Case Studies",
+      "Compliance Checklist",
+    ],
+  },
 ];
 
 const socialLinks = [
-  { icon: <FiLinkedin />, label: 'LinkedIn', href: 'https://www.linkedin.com' },
-  { icon: <FiMail />, label: 'Email', href: 'mailto:info@gmconsultants.com' },
-  { icon: <FiPhone />, label: 'Call', href: 'tel:+919876543210' }
+  { icon: <FiLinkedin />, label: "LinkedIn", href: "https://www.linkedin.com" },
+  { icon: <FiMail />, label: "Email", href: "mailto:info@gmconsultants.com" },
+  { icon: <FiPhone />, label: "Call", href: "tel:+919876543210" },
 ];
 
 const Footer = ({ year }) => (
@@ -31,7 +36,9 @@ const Footer = ({ year }) => (
         <span className="brand-mark">GM</span>
         <div>
           <h4>GM Consultants</h4>
-          <p>Building approvals, compliance, and statutory guidance accelerated.</p>
+          <p>
+            Building approvals, compliance, and statutory guidance accelerated.
+          </p>
         </div>
       </div>
       <div className="site-footer__grid">

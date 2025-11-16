@@ -1,26 +1,26 @@
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 
 const variants = {
   initial: {
     opacity: 0,
-    y: 24
+    y: 24,
   },
   animate: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.6,
-      ease: 'easeOut'
-    }
+      ease: "easeOut",
+    },
   },
   exit: {
     opacity: 0,
     y: -24,
     transition: {
       duration: 0.4,
-      ease: 'easeIn'
-    }
-  }
+      ease: "easeIn",
+    },
+  },
 };
 
 const PageTransition = ({ children }) => (

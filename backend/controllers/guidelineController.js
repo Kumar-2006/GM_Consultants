@@ -1,4 +1,4 @@
-const Guideline = require('../models/Guideline');
+const Guideline = require("../models/Guideline");
 
 // Fetch all guidelines (public)
 const getGuidelines = async (req, res, next) => {
@@ -16,7 +16,7 @@ const getGuidelineById = async (req, res, next) => {
     const guideline = await Guideline.findById(req.params.id);
 
     if (!guideline) {
-      return res.status(404).json({ message: 'Guideline not found' });
+      return res.status(404).json({ message: "Guideline not found" });
     }
 
     res.json(guideline);
@@ -31,12 +31,14 @@ const createGuideline = async (req, res, next) => {
     const { title, content } = req.body;
 
     if (!title || !content) {
-      return res.status(400).json({ message: 'Title and content are required' });
+      return res
+        .status(400)
+        .json({ message: "Title and content are required" });
     }
 
     const guideline = new Guideline({
       title: title.trim(),
-      content: content.trim()
+      content: content.trim(),
     });
 
     await guideline.save();
@@ -52,20 +54,22 @@ const updateGuideline = async (req, res, next) => {
     const { title, content } = req.body;
 
     if (!title || !content) {
-      return res.status(400).json({ message: 'Title and content are required' });
+      return res
+        .status(400)
+        .json({ message: "Title and content are required" });
     }
 
     const guideline = await Guideline.findByIdAndUpdate(
       req.params.id,
       {
         title: title.trim(),
-        content: content.trim()
+        content: content.trim(),
       },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!guideline) {
-      return res.status(404).json({ message: 'Guideline not found' });
+      return res.status(404).json({ message: "Guideline not found" });
     }
 
     res.json(guideline);
@@ -80,10 +84,10 @@ const deleteGuideline = async (req, res, next) => {
     const guideline = await Guideline.findByIdAndDelete(req.params.id);
 
     if (!guideline) {
-      return res.status(404).json({ message: 'Guideline not found' });
+      return res.status(404).json({ message: "Guideline not found" });
     }
 
-    res.json({ message: 'Guideline deleted successfully' });
+    res.json({ message: "Guideline deleted successfully" });
   } catch (error) {
     next(error);
   }
@@ -94,5 +98,5 @@ module.exports = {
   getGuidelineById,
   createGuideline,
   updateGuideline,
-  deleteGuideline
+  deleteGuideline,
 };

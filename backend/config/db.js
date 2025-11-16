@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
@@ -9,7 +9,9 @@ const connectDB = async () => {
     const mongoUri = process.env.MONGODB_URI;
 
     if (!mongoUri) {
-      throw new Error('MONGODB_URI is not defined. Set the Atlas connection string in your environment.');
+      throw new Error(
+        "MONGODB_URI is not defined. Set the Atlas connection string in your environment.",
+      );
     }
 
     const conn = await mongoose.connect(mongoUri, {
@@ -21,7 +23,7 @@ const connectDB = async () => {
     console.log(`MongoDB Connected: ${host}/${name}`);
     return conn;
   } catch (error) {
-    console.error('Database connection error:', error);
+    console.error("Database connection error:", error);
     throw error;
   }
 };

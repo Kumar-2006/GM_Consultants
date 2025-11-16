@@ -1,13 +1,13 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
-import Layout from './components/layout/Layout';
-import Home from './pages/Home';
-import Services from './pages/Services';
-import Guidelines from './pages/Guidelines';
-import Consultation from './pages/Consultation';
-import ScrollToTop from './components/ui/ScrollToTop';
-import { NotificationProvider } from './context/NotificationContext';
-import './App.css';
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+import Layout from "./components/layout/Layout";
+import Home from "./pages/Home";
+import Services from "./pages/Services";
+import Guidelines from "./pages/Guidelines";
+import Consultation from "./pages/Consultation";
+import ScrollToTop from "./components/ui/ScrollToTop";
+import { NotificationProvider } from "./context/NotificationContext";
+import "./App.css";
 
 const AnimatedRoutes = () => {
   const location = useLocation();

@@ -1,4 +1,4 @@
-const Service = require('../models/Service');
+const Service = require("../models/Service");
 
 // Fetch all services (public)
 const getServices = async (req, res, next) => {
@@ -16,7 +16,7 @@ const getServiceById = async (req, res, next) => {
     const service = await Service.findById(req.params.id);
 
     if (!service) {
-      return res.status(404).json({ message: 'Service not found' });
+      return res.status(404).json({ message: "Service not found" });
     }
 
     res.json(service);
@@ -31,13 +31,15 @@ const createService = async (req, res, next) => {
     const { title, description, imageURL } = req.body;
 
     if (!title || !description) {
-      return res.status(400).json({ message: 'Title and description are required' });
+      return res
+        .status(400)
+        .json({ message: "Title and description are required" });
     }
 
     const service = new Service({
       title: title.trim(),
       description: description.trim(),
-      imageURL: imageURL ? imageURL.trim() : ''
+      imageURL: imageURL ? imageURL.trim() : "",
     });
 
     await service.save();
@@ -53,7 +55,9 @@ const updateService = async (req, res, next) => {
     const { title, description, imageURL } = req.body;
 
     if (!title || !description) {
-      return res.status(400).json({ message: 'Title and description are required' });
+      return res
+        .status(400)
+        .json({ message: "Title and description are required" });
     }
 
     const service = await Service.findByIdAndUpdate(
@@ -61,13 +65,13 @@ const updateService = async (req, res, next) => {
       {
         title: title.trim(),
         description: description.trim(),
-        imageURL: imageURL ? imageURL.trim() : ''
+        imageURL: imageURL ? imageURL.trim() : "",
       },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!service) {
-      return res.status(404).json({ message: 'Service not found' });
+      return res.status(404).json({ message: "Service not found" });
     }
 
     res.json(service);
@@ -82,10 +86,10 @@ const deleteService = async (req, res, next) => {
     const service = await Service.findByIdAndDelete(req.params.id);
 
     if (!service) {
-      return res.status(404).json({ message: 'Service not found' });
+      return res.status(404).json({ message: "Service not found" });
     }
 
-    res.json({ message: 'Service deleted successfully' });
+    res.json({ message: "Service deleted successfully" });
   } catch (error) {
     next(error);
   }
@@ -96,5 +100,5 @@ module.exports = {
   getServiceById,
   createService,
   updateService,
-  deleteService
+  deleteService,
 };

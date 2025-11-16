@@ -1,84 +1,96 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import Hero from '../components/Hero';
-import ServiceGrid from '../components/ServiceGrid';
-import LoadingState from '../components/LoadingState';
-import ErrorState from '../components/ErrorState';
-import { getServices, getGuidelines } from '../api/client';
-import './Home.css';
+import { useEffect, useState } from "react";
+import HeroSection from "../components/home/HeroSection";
+import ServicePreview from "../components/home/ServicePreview";
+import FeaturedProjects from "../components/home/FeaturedProjects";
+import ExpertiseHighlights from "../components/home/ExpertiseHighlights";
+import GuidelineSpotlight from "../components/home/GuidelineSpotlight";
+import ProcessTimeline from "../components/home/ProcessTimeline";
+import TestimonialsCarousel from "../components/home/TestimonialsCarousel";
+import { getServices, getGuidelines } from "../api/client";
+import "./Home.css";
 
 const Home = () => {
-  const [services, setServices] = useState([]);
-  const [guidelines, setGuidelines] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [servicesState, setServicesState] = useState({
+    data: [],
+    loading: true,
+    error: "",
+  });
+  const [guidelinesState, setGuidelinesState] = useState({
+    data: [],
+    loading: true,
+    error: "",
+  });
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [servicesData, guidelinesData] = await Promise.all([
-          getServices(),
-          getGuidelines()
-        ]);
-        setServices(servicesData.slice(0, 3));
-        setGuidelines(guidelinesData.slice(0, 3));
-      } catch (err) {
-        setError(err.message || 'Failed to load content.');
-      } finally {
-        setLoading(false);
+    let isMounted = true;
+
+    const fetchData = async () => {
+      setServicesState((prev) => ({ ...prev, loading: true }));
+      setGuidelinesState((prev) => ({ ...prev, loading: true }));
+
+      const [servicesResult, guidelinesResult] = await Promise.allSettled([
+        getServices(),
+        getGuidelines(),
+      ]);
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (servicesResult.status === "fulfilled") {
+        setServicesState({
+          data: servicesResult.value,
+          loading: false,
+          error: "",
+        });
+      } else {
+        setServicesState({
+          data: [],
+          loading: false,
+          error: servicesResult.reason?.message || "Unable to load services.",
+        });
+      }
+
+      if (guidelinesResult.status === "fulfilled") {
+        setGuidelinesState({
+          data: guidelinesResult.value,
+          loading: false,
+          error: "",
+        });
+      } else {
+        setGuidelinesState({
+          data: [],
+          loading: false,
+          error:
+            guidelinesResult.reason?.message || "Unable to load guidelines.",
+        });
       }
     };
 
-    loadData();
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
     <div className="home-page">
-      <Hero />
-
-      <section className="home-section">
-        <header>
-          <h2>Our Core Services</h2>
-          <p>Expert guidance for approvals, compliance, and development planning.</p>
-        </header>
-        {loading ? (
-          <LoadingState message="Loading services..." />
-        ) : error ? (
-          <ErrorState message={error} />
-        ) : (
-          <ServiceGrid services={services} />
-        )}
-        <div className="home-section__cta">
-          <Link className="link-button" to="/services">View all services</Link>
-        </div>
-      </section>
-
-      <section className="home-section home-section--alt">
-        <header>
-          <h2>Key Planning Guidelines</h2>
-          <p>Stay ahead of compliance with concise summaries from our experts.</p>
-        </header>
-        {loading ? (
-          <LoadingState message="Loading guidelines..." />
-        ) : error ? (
-          <ErrorState message={error} />
-        ) : (
-          <ul className="guideline-preview">
-            {guidelines.map((guide) => {
-              const snippet = (guide.content || '').substring(0, 140);
-              return (
-                <li key={guide._id || guide.id}>
-                  <h3>{guide.title}</h3>
-                  <p>{snippet}{snippet.length === 140 ? '...' : ''}</p>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        <div className="home-section__cta">
-          <Link className="link-button" to="/guidelines">Browse guidelines</Link>
-        </div>
-      </section>
+      <HeroSection />
+      <ServicePreview
+        services={servicesState.data}
+        loading={servicesState.loading}
+        error={servicesState.error}
+      />
+      <FeaturedProjects />
+      <ExpertiseHighlights />
+      <GuidelineSpotlight
+        guidelines={guidelinesState.data}
+        loading={guidelinesState.loading}
+        error={guidelinesState.error}
+      />
+      <ProcessTimeline />
+      <TestimonialsCarousel />
     </div>
   );
 };

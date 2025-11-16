@@ -1,12 +1,12 @@
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 
-const Loader = ({ label = 'Loading' }) => (
+const Loader = ({ label = "Loading" }) => (
   <div className="loader" role="status" aria-live="polite">
     <motion.span
       className="loader__orb"
       animate={{
         scale: [1, 1.15, 1],
-        opacity: [0.6, 1, 0.6]
+        opacity: [0.6, 1, 0.6],
       }}
       transition={{ duration: 1.2, repeat: Infinity }}
     />
@@ -14,7 +14,7 @@ const Loader = ({ label = 'Loading' }) => (
       className="loader__orb"
       animate={{
         scale: [1, 1.25, 1],
-        opacity: [0.6, 1, 0.6]
+        opacity: [0.6, 1, 0.6],
       }}
       transition={{ duration: 1.35, repeat: Infinity, delay: 0.25 }}
     />

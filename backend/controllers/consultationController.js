@@ -1,4 +1,4 @@
-const Consultation = require('../models/Consultation');
+const Consultation = require("../models/Consultation");
 
 // Fetch all consultation requests (admin)
 const getConsultations = async (req, res, next) => {
@@ -16,12 +16,12 @@ const createConsultation = async (req, res, next) => {
     const { name, email, phone, projectType, message } = req.body;
 
     if (!name || !email || !phone || !projectType || !message) {
-      return res.status(400).json({ message: 'All fields are required' });
+      return res.status(400).json({ message: "All fields are required" });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: 'Invalid email format' });
+      return res.status(400).json({ message: "Invalid email format" });
     }
 
     const consultation = new Consultation({
@@ -29,13 +29,13 @@ const createConsultation = async (req, res, next) => {
       email: email.trim().toLowerCase(),
       phone: phone.trim(),
       projectType: projectType.trim(),
-      message: message.trim()
+      message: message.trim(),
     });
 
     await consultation.save();
     res.status(201).json({
-      message: 'Consultation request submitted successfully',
-      consultation
+      message: "Consultation request submitted successfully",
+      consultation,
     });
   } catch (error) {
     next(error);
@@ -48,10 +48,12 @@ const deleteConsultation = async (req, res, next) => {
     const consultation = await Consultation.findByIdAndDelete(req.params.id);
 
     if (!consultation) {
-      return res.status(404).json({ message: 'Consultation request not found' });
+      return res
+        .status(404)
+        .json({ message: "Consultation request not found" });
     }
 
-    res.json({ message: 'Consultation request deleted successfully' });
+    res.json({ message: "Consultation request deleted successfully" });
   } catch (error) {
     next(error);
   }
@@ -60,5 +62,5 @@ const deleteConsultation = async (req, res, next) => {
 module.exports = {
   getConsultations,
   createConsultation,
-  deleteConsultation
+  deleteConsultation,
 };

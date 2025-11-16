@@ -21,8 +21,17 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image: radial-gradient(circle farthest-corner at 25% 25%, rgba(46, 204, 113, 0.12), transparent 45%),
-    radial-gradient(circle farthest-corner at 85% 20%, rgba(46, 204, 113, 0.2), transparent 48%),
+  background-image:
+    radial-gradient(
+      circle farthest-corner at 25% 25%,
+      rgba(46, 204, 113, 0.12),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle farthest-corner at 85% 20%,
+      rgba(46, 204, 113, 0.2),
+      transparent 48%
+    ),
     linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
   opacity: 0.75;
   z-index: -1;

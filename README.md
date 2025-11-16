@@ -87,9 +87,13 @@ gm-consultants/
    ```powershell
    Copy-Item .env.example .env
    ```
-   Then edit `.env` and provide your secrets and Atlas URI (local MongoDB instances are no longer supported):
+   Then edit `.env` and provide your secrets and Atlas URI (local MongoDB instances are no longer supported). The shared Atlas connection string for this project is:
+   ```
+   mongodb+srv://kumarchandramohan2006_db_user:XSshhopkWttHHGt4@gm-consultants.kxhuzwu.mongodb.net/gm-consultants?retryWrites=true&w=majority&appName=GM-Consultants
+   ```
+   Use it directly in your `.env` alongside the secrets:
    ```env
-   MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-host>/gm-consultants?retryWrites=true&w=majority
+   MONGODB_URI=mongodb+srv://kumarchandramohan2006_db_user:XSshhopkWttHHGt4@gm-consultants.kxhuzwu.mongodb.net/gm-consultants?retryWrites=true&w=majority&appName=GM-Consultants
    JWT_SECRET=your-secret-key-here
    SESSION_SECRET=your-session-secret-here
    PORT=3000

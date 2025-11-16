@@ -24,6 +24,23 @@ const app = express();
 const PORT = Number(process.env.PORT) || 5000;
 const isProduction = process.env.NODE_ENV === "production";
 
+const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+if (!mongoUri) {
+  throw new Error(
+    "MONGO_URI (or MONGODB_URI) must be defined for session storage.",
+  );
+}
+
+if (!process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET must be defined for secure sessions.");
+}
+
+const sessionCookieMaxAgeMs = Number(process.env.SESSION_COOKIE_MAX_AGE_MS);
+const fallbackCookieMaxAgeMs = 1000 * 60 * 60 * 24 * 7; // 7 days
+const resolvedCookieMaxAgeMs = Number.isFinite(sessionCookieMaxAgeMs)
+  ? sessionCookieMaxAgeMs
+  : fallbackCookieMaxAgeMs;
+
 connectDB().catch((error) => {
   console.error("Failed to connect to MongoDB:", error.message);
 });
@@ -40,17 +57,30 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      sameSite: "none",
-      secure: true,
-    },
+const sessionOptions = {
+  name: process.env.SESSION_COOKIE_NAME || "connect.sid",
+  secret: process.env.SESSION_SECRET,
+  store: MongoStore.create({
+    mongoUrl: mongoUri,
+    ttl: Math.floor(resolvedCookieMaxAgeMs / 1000),
+    autoRemove: "native",
   }),
-);
+  resave: false,
+  saveUninitialized: false,
+  rolling: true,
+  cookie: {
+    httpOnly: true,
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
+    maxAge: resolvedCookieMaxAgeMs,
+  },
+};
+
+if (process.env.COOKIE_DOMAIN) {
+  sessionOptions.cookie.domain = process.env.COOKIE_DOMAIN;
+}
+
+app.use(session(sessionOptions));
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));

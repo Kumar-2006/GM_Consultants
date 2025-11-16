@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const fs = require("fs");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 require("dotenv").config();
@@ -56,12 +55,8 @@ app.use(
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-const adminAssetsPath = path.join(__dirname, "public");
-if (fs.existsSync(adminAssetsPath)) {
-  app.use(express.static(adminAssetsPath));
-}
-
-app.get("/favicon.ico", (req, res) => res.status(204).end());
+app.use(express.static(path.join(__dirname, "public")));
+app.get("/favicon.ico", (_req, res) => res.status(204).end());
 
 const requireAdminSession = (req, res, next) => {
   if (req.session?.adminId) {
@@ -101,32 +96,14 @@ app.get("/admin", requireAdminSession, (req, res) => {
   res.render("admin", { adminUsername: req.session.username || "Admin" });
 });
 
-// React SPA (served only in production)
-const reactBuildPath = path.join(__dirname, "public/app");
-const reactIndexFile = path.join(reactBuildPath, "index.html");
-const serveSpa = isProduction && fs.existsSync(reactIndexFile);
+const buildPath = path.join(__dirname, "..", "frontend-react", "build");
+app.use(express.static(buildPath));
 
-if (serveSpa) {
-  app.use(express.static(reactBuildPath));
+app.get("*", (req, res) => {
+  if (req.url.startsWith("/admin")) return;
 
-  const sendReactApp = (req, res) => res.sendFile(reactIndexFile);
-
-  app.get(["/", "/services", "/guidelines", "/consultation"], sendReactApp);
-  app.get(/^\/(?!api|admin\b)/, (req, res, next) => {
-    if (req.method !== "GET") {
-      return next();
-    }
-
-    return sendReactApp(req, res);
-  });
-} else {
-  app.get("/", (_req, res) => {
-    res.status(200).json({
-      message:
-        "SPA build not found. Run the React dev server from frontend-react during development.",
-    });
-  });
-}
+  res.sendFile(path.join(buildPath, "index.html"));
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {

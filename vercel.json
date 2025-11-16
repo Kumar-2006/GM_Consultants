@@ -3,7 +3,7 @@
   "version": 2,
   "functions": {
     "api/index.js": {
-      "includeFiles": "{frontend-react/build/**,backend/views/**}"
+      "includeFiles": "backend/**"
     }
   },
   "routes": [

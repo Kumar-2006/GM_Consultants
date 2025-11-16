@@ -62,7 +62,11 @@ app.use(session(sessionOptions));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-const reactBuildPath = path.join(__dirname, "../frontend-react/build");
+const publicReactPath = path.join(__dirname, "public/app");
+const fallbackReactPath = path.join(__dirname, "../frontend-react/build");
+const reactBuildPath = fs.existsSync(publicReactPath)
+  ? publicReactPath
+  : fallbackReactPath;
 const adminAssetsPath = path.join(__dirname, "public");
 
 if (fs.existsSync(reactBuildPath)) {

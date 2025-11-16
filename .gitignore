@@ -4,6 +4,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 frontend-react/build/
+backend/public/app/
 
 # Database files
 data/db/

@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
-    "build": "npm run build --prefix frontend-react",
+    "build": "npm run build:client && npm run sync-frontend",
+    "build:client": "npm run build --prefix frontend-react",
+    "sync-frontend": "node scripts/sync-frontend-build.js",
     "postinstall": "npm install --prefix frontend-react",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

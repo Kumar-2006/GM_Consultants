@@ -1,10 +1,10 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 
-const mongoUri = process.env.MONGODB_URI;
+const mongoUri = process.env.MONGO_URI;
 
 if (!mongoUri) {
-  console.error('MONGODB_URI is not defined. Set your MongoDB Atlas connection string before running this script.');
+  console.error('MONGO_URI is not defined. Set your MongoDB Atlas connection string before running this script.');
   process.exit(1);
 }
 

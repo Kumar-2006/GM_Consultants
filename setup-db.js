@@ -1,29 +1,30 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-require('dotenv').config();
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+require("dotenv").config();
 
 // Import models
-const Service = require('./backend/models/Service');
-const Guideline = require('./backend/models/Guideline');
-const AdminUser = require('./backend/models/AdminUser');
+const Service = require("./backend/models/Service");
+const Guideline = require("./backend/models/Guideline");
+const AdminUser = require("./backend/models/AdminUser");
 
 // Connect to MongoDB
 const connectDB = async () => {
   try {
-    const mongoUri = process.env.MONGODB_URI;
+    const mongoUri = process.env.MONGO_URI;
 
     if (!mongoUri) {
-      console.error('MONGODB_URI is not defined. Set the Atlas connection string before running setup-db.js.');
+      console.error(
+        "MONGO_URI is not defined. Set the Atlas connection string before running setup-db.js.",
+      );
       process.exit(1);
     }
 
     await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 10000,
     });
-    console.log('Connected to MongoDB Atlas');
+    console.log("Connected to MongoDB");
   } catch (error) {
-    console.error('Database connection error:', error);
+    console.error("Database connection error:", error);
     process.exit(1);
   }
 };
@@ -117,18 +118,21 @@ const initializeDatabase = async () => {
     console.log(`Inserted ${guidelines.length} guidelines`);
     
     // Create admin user
-    const adminUser = new AdminUser({
-      username: 'Chandramohan',
-      password: '5655'
+    const seedUsername = process.env.ADMIN_SEED_USERNAME || "Chandramohan";
+    const seedPassword = process.env.ADMIN_SEED_PASSWORD || "5655";
+    const hashedPassword = await bcrypt.hash(seedPassword, 12);
+
+    await AdminUser.create({
+      username: seedUsername,
+      password: hashedPassword,
     });
-    await adminUser.save();
-    console.log('Created admin user: Chandramohan/5655');
+    console.log(`Created admin user: ${seedUsername}`);
     
     console.log('\n✅ Database initialization completed successfully!');
     console.log('\n📋 Summary:');
     console.log(`- Services: ${services.length}`);
     console.log(`- Guidelines: ${guidelines.length}`);
-    console.log('- Admin User: Chandramohan/5655');
+    console.log(`- Admin User: ${seedUsername}`);
     console.log('\n🚀 You can now start the server with: npm start');
     
   } catch (error) {

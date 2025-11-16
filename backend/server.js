@@ -6,6 +6,10 @@ const MongoStore = require("connect-mongo");
 require("dotenv").config();
 
 const connectDB = require("./config/db");
+const Service = require("./models/Service");
+const Guideline = require("./models/Guideline");
+const Consultation = require("./models/Consultation");
+const AdminUser = require("./models/AdminUser");
 const {
   publicRouter: servicePublicRoutes,
   adminRouter: serviceAdminRoutes,
@@ -24,11 +28,9 @@ const app = express();
 const PORT = Number(process.env.PORT) || 5000;
 const isProduction = process.env.NODE_ENV === "production";
 
-const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+const mongoUri = process.env.MONGO_URI;
 if (!mongoUri) {
-  throw new Error(
-    "MONGO_URI (or MONGODB_URI) must be defined for session storage.",
-  );
+  throw new Error("MONGO_URI must be defined for database access and sessions.");
 }
 
 if (!process.env.SESSION_SECRET) {
@@ -41,9 +43,14 @@ const resolvedCookieMaxAgeMs = Number.isFinite(sessionCookieMaxAgeMs)
   ? sessionCookieMaxAgeMs
   : fallbackCookieMaxAgeMs;
 
-connectDB().catch((error) => {
-  console.error("Failed to connect to MongoDB:", error.message);
-});
+connectDB()
+  .then(() => {
+    console.log("[DB] Successfully connected to MongoDB.");
+  })
+  .catch((error) => {
+    console.error("[DB] Failed to connect to MongoDB:", error);
+    process.exitCode = 1;
+  });
 
 app.set("trust proxy", 1);
 
@@ -57,14 +64,30 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const sessionStore = MongoStore.create({
+  mongoUrl: mongoUri,
+  ttl: Math.floor(resolvedCookieMaxAgeMs / 1000),
+  autoRemove: "native",
+});
+
+if (sessionStore.clientPromise?.then) {
+  sessionStore.clientPromise
+    .then(() => {
+      console.log("[Session] MongoStore connected.");
+    })
+    .catch((error) => {
+      console.error("[Session] MongoStore connection error:", error);
+    });
+}
+
+sessionStore.on("error", (error) => {
+  console.error("[Session] MongoStore runtime error:", error);
+});
+
 const sessionOptions = {
   name: process.env.SESSION_COOKIE_NAME || "connect.sid",
   secret: process.env.SESSION_SECRET,
-  store: MongoStore.create({
-    mongoUrl: mongoUri,
-    ttl: Math.floor(resolvedCookieMaxAgeMs / 1000),
-    autoRemove: "native",
-  }),
+  store: sessionStore,
   resave: false,
   saveUninitialized: false,
   rolling: true,
@@ -110,6 +133,29 @@ app.use("/admin/services", serviceAdminRoutes);
 app.use("/admin/guidelines", guidelineAdminRoutes);
 app.use("/admin/consultations", consultationAdminRoutes);
 app.use("/admin", adminAuthRoutes);
+
+app.get("/admin/check-data", requireAdminSession, async (_req, res, next) => {
+  try {
+    const [services, guidelines, admins, consultations] = await Promise.all([
+      Service.countDocuments(),
+      Guideline.countDocuments(),
+      AdminUser.countDocuments(),
+      Consultation.countDocuments(),
+    ]);
+
+    res.json({
+      environment: process.env.NODE_ENV || "development",
+      counts: {
+        services,
+        guidelines,
+        admins,
+        consultations,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
 // Admin views
 app.get("/admin/login", (req, res) => {

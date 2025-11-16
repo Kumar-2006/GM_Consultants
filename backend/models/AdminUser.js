@@ -23,6 +23,10 @@ const adminUserSchema = new mongoose.Schema(
 adminUserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
+  if (typeof this.password === "string" && this.password.startsWith("$2")) {
+    return next();
+  }
+
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);

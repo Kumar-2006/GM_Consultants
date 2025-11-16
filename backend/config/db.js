@@ -7,7 +7,7 @@ const connectDB = async () => {
     return cachedConnection;
   }
 
-  const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+  const mongoUri = process.env.MONGO_URI;
 
   if (!mongoUri) {
     throw new Error(
@@ -22,10 +22,10 @@ const connectDB = async () => {
 
     cachedConnection = conn;
     const { host, name } = conn.connection;
-    console.log(`MongoDB connected: ${host}/${name}`);
+    console.log(`[DB] MongoDB connected: ${host}/${name}`);
     return conn;
   } catch (error) {
-    console.error("Database connection error:", error.message);
+    console.error("[DB] Database connection error:", error);
     throw error;
   }
 };

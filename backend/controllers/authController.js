@@ -21,34 +21,62 @@ const login = async (req, res, next) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
+      console.warn("[Auth] Login attempt missing credentials.");
       return res
         .status(400)
         .json({ message: "Username and password are required" });
     }
 
-    const admin = await AdminUser.findOne({ username: username.trim() });
+    const trimmedUsername = username.trim();
+    console.info(`[Auth] Login attempt for username="${trimmedUsername}"`);
+
+    const admin = await AdminUser.findOne({ username: trimmedUsername });
 
     if (!admin) {
+      console.warn(`[Auth] Admin not found for username="${trimmedUsername}"`);
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const isMatch = await admin.comparePassword(password);
 
     if (!isMatch) {
+      console.warn(
+        `[Auth] Password mismatch for username="${trimmedUsername}"`,
+      );
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
     await new Promise((resolve, reject) => {
       req.session.regenerate((err) => {
         if (err) {
+          console.error("[Auth] Session regeneration failed:", err);
           return reject(err);
         }
 
         req.session.adminId = admin._id.toString();
         req.session.username = admin.username;
+        console.debug(
+          `[Auth] Session regenerated for adminId=${req.session.adminId}`,
+        );
         resolve();
       });
     });
+
+    await new Promise((resolve, reject) => {
+      req.session.save((err) => {
+        if (err) {
+          console.error("[Auth] Session save failed:", err);
+          return reject(err);
+        }
+
+        console.debug(
+          `[Auth] Session persisted for adminId=${req.session.adminId}`,
+        );
+        resolve();
+      });
+    });
+
+    console.info(`[Auth] Login successful for username="${trimmedUsername}"`);
 
     res.json({
       message: "Login successful",
@@ -58,6 +86,7 @@ const login = async (req, res, next) => {
       },
     });
   } catch (error) {
+    console.error("[Auth] Login handler error:", error);
     next(error);
   }
 };

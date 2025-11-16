@@ -1,7 +1,13 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 
-const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/gm-consultants';
+const mongoUri = process.env.MONGODB_URI;
+
+if (!mongoUri) {
+  console.error('MONGODB_URI is not defined. Set your MongoDB Atlas connection string before running this script.');
+  process.exit(1);
+}
+
 const redactedUri = mongoUri.replace(/\/\/([^@]*@)/, '//***@');
 
 console.log(`Connecting to MongoDB: ${redactedUri}`);

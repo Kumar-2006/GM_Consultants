@@ -45,29 +45,24 @@ Use the network tab in your browser DevTools to inspect `/api/*` requests while 
 **Symptom**: Network errors in console
 **Solution**: Server is configured with `credentials: true` - should work
 
-### Issue 4: MongoDB Not Running
-**Symptom**: Connection errors
-**Solution**: Run `mongod.bat` from project folder
+### Issue 4: Wrong MongoDB URI
+**Symptom**: Connection errors mentioning authentication or DNS
+**Solution**: Ensure `MONGODB_URI` in your `.env` points to the MongoDB Atlas cluster and the IP whitelist/user credentials are correct
 
 ## Testing Steps
 
-1. **Start MongoDB** (if not running):
+1. **Start Server** (terminal from project root):
    ```
-   mongod.bat
-   ```
-
-2. **Start Server** (in new terminal):
-   ```
-   npm start
+   npm run dev
    ```
 
-3. **Check Browser Console**:
+2. **Check Browser Console**:
    - Open DevTools (F12)
    - Go to Console tab
    - Look for log messages starting with "Fetching..."
    - Check for any red error messages
 
-4. **Try Admin Dashboard**:
+3. **Try Admin Dashboard**:
    - Go to: http://localhost:3000/admin
    - Open Console (F12)
    - Watch for log messages
@@ -93,8 +88,7 @@ Consultations data: [{name: "Ram", ...}, ...]
 
 ## Quick Fix Checklist
 
-- [ ] MongoDB is running (`mongod.bat`)
-- [ ] Server is running (`npm start`)
+- [ ] Server is running (`npm run dev`)
 - [ ] Logged in as admin at `/login`
 - [ ] Browser console shows no errors
 - [ ] Session cookies are enabled in browser

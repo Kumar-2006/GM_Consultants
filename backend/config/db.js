@@ -6,14 +6,19 @@ const connectDB = async () => {
       return mongoose.connection;
     }
 
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/gm-consultants';
+    const mongoUri = process.env.MONGODB_URI;
+
+    if (!mongoUri) {
+      throw new Error('MONGODB_URI is not defined. Set the Atlas connection string in your environment.');
+    }
 
     const conn = await mongoose.connect(mongoUri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
 
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    const { host, name } = conn.connection;
+    console.log(`MongoDB Connected: ${host}/${name}`);
     return conn;
   } catch (error) {
     console.error('Database connection error:', error);

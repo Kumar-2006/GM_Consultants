@@ -10,11 +10,18 @@ const AdminUser = require('./backend/models/AdminUser');
 // Connect to MongoDB
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/gm-consultants', {
+    const mongoUri = process.env.MONGODB_URI;
+
+    if (!mongoUri) {
+      console.error('MONGODB_URI is not defined. Set the Atlas connection string before running setup-db.js.');
+      process.exit(1);
+    }
+
+    await mongoose.connect(mongoUri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log('Connected to MongoDB');
+    console.log('Connected to MongoDB Atlas');
   } catch (error) {
     console.error('Database connection error:', error);
     process.exit(1);

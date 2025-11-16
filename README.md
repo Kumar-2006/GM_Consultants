@@ -67,8 +67,7 @@ gm-consultants/
 
 ### Prerequisites
 - Node.js (v14 or higher)
-- MongoDB (local or MongoDB Atlas)
-- MongoDB Database Tools (`mongodump`, `mongorestore`)
+- MongoDB Atlas account with a database user and accessible cluster
 - npm or yarn
 
 ### Installation Steps
@@ -88,7 +87,7 @@ gm-consultants/
    ```powershell
    Copy-Item .env.example .env
    ```
-   Then edit `.env` and provide your secrets and Atlas URI (or keep the local URI for development):
+   Then edit `.env` and provide your secrets and Atlas URI (local MongoDB instances are no longer supported):
    ```env
    MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-host>/gm-consultants?retryWrites=true&w=majority
    JWT_SECRET=your-secret-key-here
@@ -96,25 +95,22 @@ gm-consultants/
    PORT=3000
    ```
 
-4. **Start MongoDB (local only)**
-   Start the MongoDB server if you are developing against the local instance. Skip this when using MongoDB Atlas.
-
-5. **Initialize the database**
+4. **Initialize the database (seeds Atlas)**
    ```bash
    node setup-db.js
    ```
 
-6. **Start the server**
+5. **Start the server**
    ```bash
-   npm start
+   npm run dev
    ```
 
-      7. **Start the React development server**
-       ```bash
-       cd frontend-react
-       npm start
-       ```
-       The React dev server proxies API calls to `http://localhost:3000` (configured via `proxy` in `frontend-react/package.json`).
+6. **Build the React frontend (once per code update)**
+   ```bash
+   cd frontend-react
+   npm run build
+   ```
+   The Express backend will serve the compiled React app from `frontend-react/build`.
 
 7. **Access the application**
    - Website: http://localhost:3000
@@ -122,8 +118,8 @@ gm-consultants/
 
    ## ☁️ Move Local Data to MongoDB Atlas
 
-   - **Install MongoDB Database Tools**: Open an elevated PowerShell window and run `choco install mongodb-database-tools`. If you do not use Chocolatey, download the Windows installer from the official MongoDB Database Tools page and add the installation folder to your `PATH`.
-   - **Export the local database**: Ensure your local MongoDB server is running (for example, via `mongod.bat`), then run `mongodump --uri "mongodb://localhost:27017/gm-consultants" --out "./backups/gm-consultants-export"`.
+   - **Install MongoDB Database Tools** (if you have existing local data to migrate): open an elevated PowerShell window and run `choco install mongodb-database-tools`. If you do not use Chocolatey, download the Windows installer from the official MongoDB Database Tools page and add the installation folder to your `PATH`.
+   - **Export the local database** (optional migration step): run `mongodump --uri "mongodb://localhost:27017/gm-consultants" --out "./backups/gm-consultants-export"` from the environment that still has the legacy data.
    - **Prepare your Atlas cluster**: Create a free or paid cluster in MongoDB Atlas, create a database user with username/password authentication, and whitelist your current IP address.
    - **Restore into Atlas**: Run `mongorestore --nsInclude "gm-consultants.*" --uri "mongodb+srv://<username>:<password>@<cluster-host>/gm-consultants" "./backups/gm-consultants-export/gm-consultants"` to upload the dump.
    - **Update environment variables**: Set the Atlas connection string in `.env` so the application points to the cloud database. Restart the server to pick up the new configuration.

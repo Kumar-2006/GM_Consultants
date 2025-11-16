@@ -22,3 +22,96 @@
   line-height: 1.7;
   max-width: 760px;
 }
+
+.guidelines-grid {
+  display: grid;
+  gap: 1.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.guideline-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 2rem;
+  border-radius: 1.5rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f7f9ff 100%);
+  border: 1px solid rgba(46, 78, 138, 0.08);
+  box-shadow: 0 16px 32px rgba(31, 45, 77, 0.07);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  min-height: 100%;
+}
+
+.guideline-card:hover,
+.guideline-card:focus-within {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 40px rgba(29, 52, 108, 0.12);
+}
+
+.guideline-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+
+.guideline-card__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  background: rgba(52, 121, 247, 0.16);
+  color: #1f2d4d;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.guideline-card__titles h3 {
+  font-size: 1.35rem;
+  color: #1f2d4d;
+  margin-bottom: 0.35rem;
+}
+
+.guideline-card__subtitle {
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #4b5a7a;
+}
+
+.guideline-card__content {
+  color: #42516b;
+  line-height: 1.75;
+  white-space: pre-line;
+}
+
+.guideline-card__media {
+  margin-top: 0.5rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  max-height: 220px;
+}
+
+.guideline-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .guidelines-header {
+    padding: 1.75rem;
+  }
+
+  .guideline-card {
+    padding: 1.75rem;
+  }
+
+  .guideline-card__badge {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.85rem;
+  }
+}

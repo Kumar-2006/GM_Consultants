@@ -47,7 +47,7 @@ Use the network tab in your browser DevTools to inspect `/api/*` requests while 
 
 ### Issue 4: Wrong MongoDB URI
 **Symptom**: Connection errors mentioning authentication or DNS
-**Solution**: Ensure `MONGODB_URI` in your `.env` points to the MongoDB Atlas cluster and the IP whitelist/user credentials are correct
+**Solution**: Ensure `MONGO_URI` in your `.env` points to the MongoDB Atlas cluster and the IP whitelist/user credentials are correct
 
 ## Testing Steps
 

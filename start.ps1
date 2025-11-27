@@ -15,8 +15,8 @@ try {
     exit 1
 }
 
-if ([string]::IsNullOrWhiteSpace($env:MONGODB_URI)) {
-    Write-Host "ERROR: MONGODB_URI environment variable is not set." -ForegroundColor Red
+if ([string]::IsNullOrWhiteSpace($env:MONGO_URI)) {
+    Write-Host "ERROR: MONGO_URI environment variable is not set." -ForegroundColor Red
     Write-Host "Please add your MongoDB Atlas connection string to the current session or .env file." -ForegroundColor Yellow
     Read-Host "Press Enter to exit"
     exit 1
